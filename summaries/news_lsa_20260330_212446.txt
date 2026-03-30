@@ -1,0 +1,15 @@
+MALAY TEXT SUMMARIZATION REPORT
+============================================================
+Input:              cleaned_text/news.txt
+Mode:               written
+Extractive Method:  LSA
+Generated:          2026-03-30 21:24:46
+============================================================
+
+--- EXTRACTIVE KEY POINTS (LSA) ---
+1. Dalam wawancara dengan Stesen Media CNBC baru-baru ini, Ketua JP Morgan bagi Asia merangkap Ketua Bersama Strategi Ekuiti Pasaran Pesat Membangun Global Rajiv Batra berkata, selain China dan Malaysia, kebanyakan ekonomi di rantau ini dilihat lebih terdedah kepada kejutan tenaga.Beliau berkata kekuatan Malaysia terletak kepada profil eksport tenaga dan rangka kerja dasar yang berdisiplin, yang menyediakan penampan terhadap tekanan luaran.
+2. "Defisit fiskal Malaysia terkawal dengan baik berikutan dasar kerajaan dan kadar inflasi yang tidak terlalu tinggi," katanya.
+3. Beliau bagaimanapun berkata jika situasi itu berlarutan, keadaan ini boleh mencetuskan impak meluas terhadap kewangan, teknologi, telekomunikasi dan penjagaan kesihatan.
+
+--- FINAL ABSTRACTIVE SUMMARY (T5-Base) ---
+Ketua JP Morgan untuk Asia mengatakan Malaysia lebih terdedah kepada kejutan tenaga. Rajiv Batra berkata, Malaysia bergantung kepada profil eksport tenaga dan rangka kerja dasar yang berdisiplin.

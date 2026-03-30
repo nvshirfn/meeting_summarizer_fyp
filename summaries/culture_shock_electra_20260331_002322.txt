@@ -1,0 +1,21 @@
+MALAY TEXT SUMMARIZATION REPORT
+============================================================
+Input:              stt_transcription/culture_shock.txt
+Mode:               meeting
+Extractive Method:  ELECTRA
+Generated:          2026-03-31 00:23:22
+============================================================
+
+--- EXTRACTIVE KEY POINTS (ELECTRA) ---
+1. Let's get back to the video.
+2. tetapi, masa aku mula-mula sampai dekat universiti aku itu, aku memang terkejut beruk tengok universiti aku itu sebab kelas-kelas, kuliah, dewan kita orang semua guna binaan kayu.
+3. Idong jaga, idong jaga, jangan kembang.
+4. , tetapi serious.
+5. Tinggi-tinggi gunung Kinabalu.
+6. Sebelum aku start video ini, kalau korang berminat dengan konten aku, minat dengan taste of humor aku, korang mesti akan jatuh cinta dengan komik sekolah komedi aku ini.
+7. Sebab ada yang cancel order, lepas itu ada aku order lebih sedikit-sedikit.
+8. Dan kalau korang berminat, stok yang pre-order hari itu pun masih ada lagi dan korang boleh dapatkan secara online dekat kedai Shopee aku ini sahaja.
+9. Nak pergi kelas kena naik sampan ke?.
+
+--- FINAL ABSTRACTIVE SUMMARY (T5-Base) ---
+"Saya terkejut melihat universiti saya itu kerana kelas-kelas, kuliah, dewan kami orang semua guna binaan kayu" "Sekiranya korang berminat dengan konten saya, minat dengan rasa humor saya, idong mesti jatuh cinta dengan komik sekolah komedi saya ini".

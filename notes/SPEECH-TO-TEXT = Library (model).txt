@@ -1,0 +1,34 @@
+SPEECH-TO-TEXT = Library (model)
+- Whisper 
+- Mesolitica (mesolitica/Malaysian-whisper-large-v3-turbo-v3)
+
+    
+PREPROCESS = Library
+- Malaya
+
+
+TEXT SUMMARIZATION
+
+Extractive Summarization:
+- Sumy (TextRank)
+- Malaya (TextRank)
+- LSA
+- Malaya (ELECTRA/BERT)
+
+Abstractive Summarization:
+- Mesolitica (Malaysian-T5)
+- Malaysian-BART
+- Llama-3-8B
+
+The most accurate way to do this in Python is a Two-Step Pipeline:
+
+Step 1 (Extractive Filter): Use an extractive model (like Malaya.summarize.extractive.transformer) to reduce a long 1-hour transcript down to the top 20% most important sentences.
+
+Step 2 (Abstractive Polish): Feed those "top sentences" into an abstractive model (like Malaysian-T5).
+
+Why do this?
+
+Speed: Abstractive models are slow on long text. Shortening it first makes the process 5x faster.
+
+Accuracy: It prevents the abstractive AI from "wandering off" or hallucinating, because it only sees the most relevant facts
+

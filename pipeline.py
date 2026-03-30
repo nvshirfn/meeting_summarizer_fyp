@@ -1,0 +1,150 @@
+"""
+Unified Summarization Pipeline for Malay Text
+Chains: Preprocess → Extractive → Abstractive → Report
+
+Supports both meeting transcripts and written Malay text (news, articles).
+"""
+
+import os
+import argparse
+from datetime import datetime
+
+from preprocess import preprocess_malay_transcript
+from extractive import run_extractive
+from abstractive import abstractive_summarize
+
+
+def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
+                 output_dir="summaries", skip_preprocess=False):
+    """
+    Full summarization pipeline: Preprocess → Extractive → Abstractive → Save Report.
+    
+    Args:
+        input_path: Path to the raw input text file
+        extractive_method: "textrank", "lsa", or "electra"
+        mode: "meeting" for spoken transcripts, "written" for news/articles
+        output_dir: Directory to save the output report
+        skip_preprocess: If True, skip preprocessing (input is already clean)
+    
+    Returns:
+        dict with keys: cleaned_text, extractive_result, abstractive_summary, report_path
+    """
+    # ── STEP 0: Load Input ──────────────────────────────────────
+    print(f"\n{'='*60}")
+    print(f"  MALAY TEXT SUMMARIZATION PIPELINE")
+    print(f"{'='*60}")
+    print(f"  Input:       {input_path}")
+    print(f"  Mode:        {mode}")
+    print(f"  Extractive:  {extractive_method.upper()}")
+    print(f"  Preprocess:  {'Skipped' if skip_preprocess else 'Enabled'}")
+    print(f"{'='*60}\n")
+
+    with open(input_path, "r", encoding="utf-8") as f:
+        raw_text = f.read()
+
+    original_word_count = len(raw_text.split())
+
+    # ── STEP 1: Preprocess ──────────────────────────────────────
+    if skip_preprocess:
+        print("[Step 1/3] Preprocessing: SKIPPED (using input as-is)\n")
+        cleaned_text = raw_text
+    else:
+        print(f"[Step 1/3] Preprocessing ({mode} mode)...")
+        cleaned_text = preprocess_malay_transcript(raw_text, mode=mode)
+        cleaned_word_count = len(cleaned_text.split())
+        reduction = ((original_word_count - cleaned_word_count) / original_word_count * 100) if original_word_count > 0 else 0
+        print(f"  Original: {original_word_count} words → Cleaned: {cleaned_word_count} words ({reduction:.1f}% reduced)\n")
+
+    # ── STEP 2: Extractive Summarization ────────────────────────
+    print(f"[Step 2/3] Extractive Summarization ({extractive_method.upper()})...")
+    extractive_result = run_extractive(cleaned_text, method=extractive_method)
+
+    print(f"  Total sentences: {extractive_result['total_sentences']}")
+    print(f"  Extracted: {extractive_result['extracted_count']} sentences\n")
+    
+    for i, sent in enumerate(extractive_result['sentences'], 1):
+        print(f"    {i}. {sent}")
+    print()
+
+    # ── STEP 3: Abstractive Summarization ───────────────────────
+    print(f"[Step 3/3] Abstractive Summarization (Malaya T5-Base)...")
+    print(f"  Rewriting for natural flow and accuracy (this may take a moment)...\n")
+
+    abstractive_summary = abstractive_summarize(extractive_result['combined'])
+
+    print(f"  FINAL SUMMARY:")
+    print(f"  {abstractive_summary}\n")
+
+    # ── STEP 4: Save Report ─────────────────────────────────────
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Generate output filename from input filename
+    base_name = os.path.splitext(os.path.basename(input_path))[0]
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    report_filename = f"{base_name}_{extractive_method}_{timestamp}.txt"
+    report_path = os.path.join(output_dir, report_filename)
+
+    with open(report_path, "w", encoding="utf-8") as f:
+        f.write(f"MALAY TEXT SUMMARIZATION REPORT\n")
+        f.write(f"{'='*60}\n")
+        f.write(f"Input:              {input_path}\n")
+        f.write(f"Mode:               {mode}\n")
+        f.write(f"Extractive Method:  {extractive_method.upper()}\n")
+        f.write(f"Generated:          {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+        f.write(f"{'='*60}\n\n")
+
+        f.write(f"--- EXTRACTIVE KEY POINTS ({extractive_method.upper()}) ---\n")
+        for i, sent in enumerate(extractive_result['sentences'], 1):
+            f.write(f"{i}. {sent}\n")
+
+        f.write(f"\n--- FINAL ABSTRACTIVE SUMMARY (T5-Base) ---\n")
+        f.write(abstractive_summary)
+        f.write("\n")
+
+    print(f"{'='*60}")
+    print(f"  Report saved to: {report_path}")
+    print(f"{'='*60}\n")
+
+    return {
+        "cleaned_text": cleaned_text,
+        "extractive_result": extractive_result,
+        "abstractive_summary": abstractive_summary,
+        "report_path": report_path
+    }
+
+
+# --- CLI ENTRY POINT ---
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Malay Text Summarization Pipeline: Preprocess → Extractive → Abstractive",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python pipeline.py --input stt_transcription/culture_shock.txt --method textrank
+  python pipeline.py --input stt_transcription/culture_shock.txt --method electra
+  python pipeline.py --input cleaned_text/news.txt --method lsa --mode written --skip-preprocess
+        """
+    )
+    parser.add_argument("--input", required=True, help="Path to input text file")
+    parser.add_argument("--method", choices=["textrank", "lsa", "electra"], default="textrank",
+                        help="Extractive summarization method (default: textrank)")
+    parser.add_argument("--mode", choices=["meeting", "written"], default="meeting",
+                        help="Text type: 'meeting' for transcripts, 'written' for news/articles (default: meeting)")
+    parser.add_argument("--output-dir", default="summaries",
+                        help="Directory to save output reports (default: summaries)")
+    parser.add_argument("--skip-preprocess", action="store_true",
+                        help="Skip preprocessing (use if input is already cleaned)")
+
+    args = parser.parse_args()
+
+    if not os.path.exists(args.input):
+        print(f"Error: Input file not found: {args.input}")
+        exit(1)
+
+    run_pipeline(
+        input_path=args.input,
+        extractive_method=args.method,
+        mode=args.mode,
+        output_dir=args.output_dir,
+        skip_preprocess=args.skip_preprocess
+    )

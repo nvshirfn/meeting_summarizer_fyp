@@ -1,0 +1,5 @@
+--- EXTRACTIVE KEY POINTS (ELECTRA ENCODER) ---
+Let's get back to the video. tetapi, masa aku mula-mula sampai dekat universiti aku itu, aku memang terkejut beruk tengok universiti aku itu sebab kelas-kelas, kuliah, dewan kita orang semua guna binaan kayu. Idong jaga, idong jaga, jangan kembang., tetapi serious. Tinggi-tinggi gunung Kinabalu., wah. Sebelum aku start video ini, kalau korang berminat dengan konten aku, minat dengan taste of humor aku, korang mesti akan jatuh cinta dengan komik sekolah komedi aku ini. Sebab ada yang cancel order, lepas itu ada aku order lebih sedikit-sedikit. Dan kalau korang berminat, stok yang pre-order hari itu pun masih ada lagi dan korang boleh dapatkan secara online dekat kedai Shopee aku ini sahaja. Nak pergi kelas kena naik sampan ke?
+
+--- FINAL ABSTRACTIVE SUMMARY (T5 BASE - HIGH PENALTY) ---
+"Saya terkejut melihat universiti saya itu kerana kelas-kelas, kuliah, dewan kami orang semua guna binaan kayu" "Sekiranya korang berminat dengan konten saya, minat dengan rasa humor saya, idong mesti jatuh cinta dengan komik sekolah komedi saya ini".

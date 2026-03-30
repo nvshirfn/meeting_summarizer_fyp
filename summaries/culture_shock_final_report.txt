@@ -1,0 +1,42 @@
+--- EXTRACTIVE KEY POINTS (TEXTRANK) ---
+Sebelum aku start video ini, kalau korang berminat dengan konten aku, minat dengan taste of humor aku, korang mesti akan jatuh cinta dengan komik sekolah komedi aku ini.
+Dan kalau korang berminat, stok yang pre-order hari itu pun masih ada lagi dan korang boleh dapatkan secara online dekat kedai Shopee aku ini sahaja.
+Kalau korang dah lama tengok channel aku, korang mesti tahu yang aku pernah belajar dekat Sarawak.
+Dan banyak cerita-cerita aku sebelum ini terjadi dekat Sarawak.
+Aku tidak pernah ada stereotype dekat orang Sarawak.
+Sebelum aku nak belajar dekat Sarawak ini, aku macam neutral sahaja.
+Walaupun kadang-kadang orang semenanjung ini melawak tanya aku yang aku duduk dekat Sarawak ini, tidur atas pokok ke?
+tetapi aku rasa benda itu tidak lawak pun.
+tetapi, masa aku mula-mula sampai dekat universiti aku itu, aku memang terkejut beruk tengok universiti aku itu sebab kelas-kelas, kuliah, dewan kita orang semua guna binaan kayu.
+Lepas itu aku dengan member aku pun tengok sesama kitorang.
+tetapi masa itu gambar dekat Google Image itu tunjuk yang universiti kitorang ini dia besar.
+Dan yang ambil program asasi macam aku, memang kena duduk dekat kampus timur.
+Nanti kalau aku nak ambil degree, baru boleh duduk dekat kampus barat yang bangunan batu-bata itu.
+Sebab itu Lorat Sarawak aku ini lemah sedikit.
+tetapi aku rasa kalau aku belajar full lima tahun pun, aku tidak akan dapat nak kuasai Lorat Sarawak sebab aku tidak tahu kenapa.
+Aku nak beli air sirap dekat seorang kakak ini.
+jadi, aku pun cakap dekat dia guna Lorat Sarawak.
+Pasal aku macam, gelabah sebab takut nampak macam aku ini teraihat sangat nak cakap Sarawak.
+tetapi, walaupun aku tidak pandai cakap Sarawak, aku, aku boleh sahaja faham orang Sarawak cakap apa.
+Cakap pasal nyanyi, aku baru tahu satu benda ini bila aku belajar dekat Sarawak.
+tetapi, ada satu member sahabat aku yang lain ini, dia memang low profile gila.
+Lepas itu nak dia jadikan cerita, satu hari ini, aku terdengar suara member aku dia tengah karok dekat tengah-tengah pasar, dekat universiti aku.
+Bila aku duk dekat Sarawak ini baru aku tahu yang dekat Sarawak ini susah kau nak dapat roti gardenia.
+Sampai kalau kau naik flight nak ke Sarawak itu, kau akan jumpa ramai gila orang Sarawak yang bawa beg yang dipenuhi dengan roti Gadinia.
+Mula-mula, aku ingatkan roti Gadinia ini tidak ada dekat Sarawak.
+tetapi satu hari ini aku ada terjumpa roti gadinia dekat satu pasaraya dekat Sarawak ini, aku macam,, ada.
+Orang Sarawak beli dekat Semenanjung sebab roti gadinia dekat Sarawak ini bapak mahal.
+Dan yang terakhir sekali, apa yang buat aku jatuh cinta dengan Sarawak ini?
+Aku akan tunjuk beberapa gambar yang aku tangkap kalau korang tidak percaya.
+Masa aku tulis skrip cerita ini pun, aku, secara tidak sengaja terkenang banyak benda yang aku tidak cerita dekat sini.
+Dulu housemate, roommate, classmate aku itu yang jadi family aku.
+Sebab rasa macam ada satu bahagian jiwa aku yang tertinggal dekat sana.
+Walaupun aku datang balik sana pun, tempat itu tidak akan sama lagi dah.
+Hai guys, jadi inilah dia gambar yang aku cakap nak tunjuk itu.
+jadi, inilah dia gambar yang aku cakap nak tunjuk itu.
+Aku paling ingat langit ini sebab langit ini sama dengan langit masa Black Panther jumpa nenek moyang dia dalam mimpi itu.
+By the way, untuk yang tidak sempat nak pre-order komik hari itu, korang dah boleh beli yang ready stock.
+Sebab ada yang cancel order, lepas itu ada aku order lebih sedikit-sedikit.
+
+--- FINAL ABSTRACTIVE SUMMARY (T5 BASE) ---
+Sekiranya korang berminat, stok yang pra-pesanan hari itu pun masih ada lagi. Sekiranya ada yang membatalkan pesanan, lepas itu ada pesanan saya lebih sedikit-sedikit. Saya tidak pernah ada stereotaip dekat orang Sarawak.
