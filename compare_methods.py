@@ -13,14 +13,15 @@ from datetime import datetime
 
 from preprocess import preprocess_malay_transcript
 from extractive import run_extractive
-from abstractive import abstractive_summarize
+from abstractive import abstractive_summarize, AVAILABLE_MODELS, DEFAULT_MODEL_KEY
 
 
 METHODS = ["textrank", "lsa", "electra"]
 
 
 def compare_all(input_path, mode="meeting", output_dir="summaries",
-                skip_preprocess=False, skip_abstractive=False):
+                skip_preprocess=False, skip_abstractive=False,
+                abs_model=DEFAULT_MODEL_KEY, abs_mode="beam"):
     """
     Run all 3 extractive methods on the same input, then abstractive on each.
     
@@ -74,8 +75,12 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
 
             # Run abstractive on this extractive output
             if not skip_abstractive:
-                print(f"  [Abstractive] Generating summary from {method.upper()} output...")
-                abs_summary = abstractive_summarize(ext_result['combined'])
+                print(f"  [Abstractive] Generating summary from {method.upper()} output ({abs_model}, {abs_mode})...")
+                abs_summary = abstractive_summarize(
+                    ext_result['combined'],
+                    model=abs_model,
+                    mode=abs_mode
+                )
                 print(f"  [Abstractive] Result: {abs_summary}\n")
             else:
                 abs_summary = "(skipped)"
@@ -104,6 +109,7 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
         f.write(f"{'='*60}\n")
         f.write(f"Input:     {input_path}\n")
         f.write(f"Mode:      {mode}\n")
+        f.write(f"Abs Model: {abs_model} ({abs_mode})\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"{'='*60}\n\n")
 
@@ -161,6 +167,7 @@ Examples:
   python compare_methods.py --input stt_transcription/culture_shock.txt
   python compare_methods.py --input cleaned_text/news.txt --mode written --skip-preprocess
   python compare_methods.py --input stt_transcription/culture_shock.txt --extractive-only
+  python compare_methods.py --input stt_transcription/culture_shock.txt --abs-model ms-t5-base --abs-mode sampling
         """
     )
     parser.add_argument("--input", required=True, help="Path to input text file")
@@ -172,6 +179,11 @@ Examples:
                         help="Skip preprocessing")
     parser.add_argument("--extractive-only", action="store_true",
                         help="Only compare extractive outputs (skip abstractive, much faster)")
+    parser.add_argument("--abs-model", default=DEFAULT_MODEL_KEY,
+                        choices=list(AVAILABLE_MODELS.keys()),
+                        help=f"Abstractive model (default: {DEFAULT_MODEL_KEY})")
+    parser.add_argument("--abs-mode", choices=["beam", "sampling"], default="beam",
+                        help="Decoding strategy (default: beam)")
 
     args = parser.parse_args()
 
@@ -184,5 +196,7 @@ Examples:
         mode=args.mode,
         output_dir=args.output_dir,
         skip_preprocess=args.skip_preprocess,
-        skip_abstractive=args.extractive_only
+        skip_abstractive=args.extractive_only,
+        abs_model=args.abs_model,
+        abs_mode=args.abs_mode
     )

@@ -1,0 +1,131 @@
+EXTRACTIVE METHOD COMPARISON REPORT
+============================================================
+Input:     stt_transcription/culture_shock.txt
+Mode:      meeting
+Abs Model: ms-t5-base (beam)
+Generated: 2026-03-31 20:33:50
+============================================================
+
+────────────────────────────────────────────────────────────
+METHOD: TEXTRANK
+────────────────────────────────────────────────────────────
+Extracted 38 / 192 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Sebelum aku start video ini, kalau korang berminat dengan konten aku, minat dengan taste of humor aku, korang mesti akan jatuh cinta dengan komik sekolah komedi aku ini.
+  2. Dan kalau korang berminat, stok yang pre-order hari itu pun masih ada lagi dan korang boleh dapatkan secara online dekat kedai Shopee aku ini sahaja.
+  3. Kalau korang dah lama tengok channel aku, korang mesti tahu yang aku pernah belajar dekat Sarawak.
+  4. Dan banyak cerita-cerita aku sebelum ini terjadi dekat Sarawak.
+  5. Aku tidak pernah ada stereotype dekat orang Sarawak.
+  6. Sebelum aku nak belajar dekat Sarawak ini, aku macam neutral sahaja.
+  7. Walaupun kadang-kadang orang semenanjung ini melawak tanya aku yang aku duduk dekat Sarawak ini, tidur atas pokok ke?
+  8. tetapi aku rasa benda itu tidak lawak pun.
+  9. tetapi, masa aku mula-mula sampai dekat universiti aku itu, aku memang terkejut beruk tengok universiti aku itu sebab kelas-kelas, kuliah, dewan kita orang semua guna binaan kayu.
+  10. Lepas itu aku dengan member aku pun tengok sesama kitorang.
+  11. tetapi masa itu gambar dekat Google Image itu tunjuk yang universiti kitorang ini dia besar.
+  12. Dan yang ambil program asasi macam aku, memang kena duduk dekat kampus timur.
+  13. Nanti kalau aku nak ambil degree, baru boleh duduk dekat kampus barat yang bangunan batu-bata itu.
+  14. Sebab itu Lorat Sarawak aku ini lemah sedikit.
+  15. tetapi aku rasa kalau aku belajar full lima tahun pun, aku tidak akan dapat nak kuasai Lorat Sarawak sebab aku tidak tahu kenapa.
+  16. Aku nak beli air sirap dekat seorang kakak ini.
+  17. jadi, aku pun cakap dekat dia guna Lorat Sarawak.
+  18. Pasal aku macam, gelabah sebab takut nampak macam aku ini teraihat sangat nak cakap Sarawak.
+  19. tetapi, walaupun aku tidak pandai cakap Sarawak, aku, aku boleh sahaja faham orang Sarawak cakap apa.
+  20. Cakap pasal nyanyi, aku baru tahu satu benda ini bila aku belajar dekat Sarawak.
+  21. tetapi, ada satu member sahabat aku yang lain ini, dia memang low profile gila.
+  22. Lepas itu nak dia jadikan cerita, satu hari ini, aku terdengar suara member aku dia tengah karok dekat tengah-tengah pasar, dekat universiti aku.
+  23. Bila aku duk dekat Sarawak ini baru aku tahu yang dekat Sarawak ini susah kau nak dapat roti gardenia.
+  24. Sampai kalau kau naik flight nak ke Sarawak itu, kau akan jumpa ramai gila orang Sarawak yang bawa beg yang dipenuhi dengan roti Gadinia.
+  25. Mula-mula, aku ingatkan roti Gadinia ini tidak ada dekat Sarawak.
+  26. tetapi satu hari ini aku ada terjumpa roti gadinia dekat satu pasaraya dekat Sarawak ini, aku macam,, ada.
+  27. Orang Sarawak beli dekat Semenanjung sebab roti gadinia dekat Sarawak ini bapak mahal.
+  28. Dan yang terakhir sekali, apa yang buat aku jatuh cinta dengan Sarawak ini?
+  29. Aku akan tunjuk beberapa gambar yang aku tangkap kalau korang tidak percaya.
+  30. Masa aku tulis skrip cerita ini pun, aku, secara tidak sengaja terkenang banyak benda yang aku tidak cerita dekat sini.
+  31. Dulu housemate, roommate, classmate aku itu yang jadi family aku.
+  32. Sebab rasa macam ada satu bahagian jiwa aku yang tertinggal dekat sana.
+  33. Walaupun aku datang balik sana pun, tempat itu tidak akan sama lagi dah.
+  34. Hai guys, jadi inilah dia gambar yang aku cakap nak tunjuk itu.
+  35. jadi, inilah dia gambar yang aku cakap nak tunjuk itu.
+  36. Aku paling ingat langit ini sebab langit ini sama dengan langit masa Black Panther jumpa nenek moyang dia dalam mimpi itu.
+  37. By the way, untuk yang tidak sempat nak pre-order komik hari itu, korang dah boleh beli yang ready stock.
+  38. Sebab ada yang cancel order, lepas itu ada aku order lebih sedikit-sedikit.
+
+ABSTRACTIVE SUMMARY:
+  Korang dah lama tengok saluran aku, korang mesti tahu yang saya pernah belajar dekat Sarawak ini. Saya tidak pernah ada stereotaip dekat orang Sarawak. Tetapi ketika saya mula-mula sampai dekat universiti saya memang terkejut beruk melihat universiti saya sebab kelas-kelas, kuliah, dewan kita semua guna binaan kayu.
+
+────────────────────────────────────────────────────────────
+METHOD: LSA
+────────────────────────────────────────────────────────────
+Extracted 38 / 192 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Aku habiskan masa setahun lebih tau untuk buat komik ini.
+  2. Dan kalau korang berminat, stok yang pre-order hari itu pun masih ada lagi dan korang boleh dapatkan secara online dekat kedai Shopee aku ini sahaja.
+  3. Dan banyak cerita-cerita aku sebelum ini terjadi dekat Sarawak.
+  4. Aku tidak pernah ada stereotype dekat orang Sarawak.
+  5. Dan nature dekat Sarawak ini pun boleh tahan cantik, mat.
+  6. Dengan kehebatan kitorang yang sangat menabjukkan dalam mencari gambar dekat Google Image.
+  7. Dan rupanya, universiti aku ini ada dua kampus.
+  8. Dan yang ambil program asasi macam aku, memang kena duduk dekat kampus timur.
+  9. Nanti kalau aku nak ambil degree, baru boleh duduk dekat kampus barat yang bangunan batu-bata itu.
+  10. jadi, kena tahan dan sekejap duduk setahun dekat kampus timur itu.
+  11. Sebenarnya, aku sepatutnya belajar dekat sana dalam lima tahun.
+  12. tetapi disebabkan PKP, aku just dapat tiga tahun sahaja.
+  13. Sebab itu Lorat Sarawak aku ini lemah sedikit.
+  14. Dan aku pun akan sambung baki perbualan kita orang dengan Lorat KL.
+  15. Aku nak beli air sirap dekat seorang kakak ini.
+  16. jadi, aku pun cakap dekat dia guna Lorat Sarawak.
+  17. Cuma aku tidak tahu nak reply macam mana.
+  18. Boleh katakan dalam sepuluh itu, sembilan orang suara sedap.
+  19. tetapi aku memang ada ramai kenalan Sabah yang mukenek sahaja.
+  20. Haa, mungkin dia kot yang satu daripada sepuluh itu.
+  21. tetapi, ada satu member sahabat aku yang lain ini, dia memang low profile gila.
+  22. Merdu itu tidak payah cakap, macam dengar dekat radio.
+  23. Bila aku duk dekat Sarawak ini baru aku tahu yang dekat Sarawak ini susah kau nak dapat roti gardenia.
+  24. Disebabkan itu, kebanyakan daripada mereka memang jadi hantu Gadinia.
+  25. Sampai kalau kau naik flight nak ke Sarawak itu, kau akan jumpa ramai gila orang Sarawak yang bawa beg yang dipenuhi dengan roti Gadinia.
+  26. Mula-mula, aku ingatkan roti Gadinia ini tidak ada dekat Sarawak.
+  27. tetapi satu hari ini aku ada terjumpa roti gadinia dekat satu pasaraya dekat Sarawak ini, aku macam,, ada.
+  28. Kita yang Semenanjung ini kerap roti pun tidak nak makan.
+  29. Lain betul, kehidupan kita dulu masa study dengan sekarang.
+  30. tetapi kadang-kadang itu rasa macam pedih sedikit bila teringat.
+  31. Sebab rasa macam ada satu bahagian jiwa aku yang tertinggal dekat sana.
+  32. Walaupun aku datang balik sana pun, tempat itu tidak akan sama lagi dah.
+  33. Bukan dekat Sarawak aje, satu Malaysia aku travel.
+  34. Sebab semua negeri-negeri dekat Malaysia ini pandai jaga sistem pembentungan.
+  35. Macam-macam kerajaan negeri buat nak meningkatkan liputan perkhidmatan pembentungan bersambung.
+  36. Hai guys, jadi inilah dia gambar yang aku cakap nak tunjuk itu.
+  37. Cuma kamera aku sahaja, masa itu agak cokia sedikit.
+  38. jadi, inilah dia gambar yang aku cakap nak tunjuk itu.
+
+ABSTRACTIVE SUMMARY:
+  "Saya tidak pernah ada stereotaip dekat orang Sarawak. Dan nature dekat Sarawak ini pun boleh tahan cantik, mat". Saya sepatutnya belajar dekat sana dalam lima tahun tetapi disebabkan PKP, saya hanya dapat tiga tahun sahaja.
+
+────────────────────────────────────────────────────────────
+METHOD: ELECTRA
+────────────────────────────────────────────────────────────
+Extracted 9 / 168 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Let's get back to the video.
+  2. tetapi, masa aku mula-mula sampai dekat universiti aku itu, aku memang terkejut beruk tengok universiti aku itu sebab kelas-kelas, kuliah, dewan kita orang semua guna binaan kayu.
+  3. Idong jaga, idong jaga, jangan kembang.
+  4. , tetapi serious.
+  5. Tinggi-tinggi gunung Kinabalu.
+  6. Sebelum aku start video ini, kalau korang berminat dengan konten aku, minat dengan taste of humor aku, korang mesti akan jatuh cinta dengan komik sekolah komedi aku ini.
+  7. Sebab ada yang cancel order, lepas itu ada aku order lebih sedikit-sedikit.
+  8. Dan kalau korang berminat, stok yang pre-order hari itu pun masih ada lagi dan korang boleh dapatkan secara online dekat kedai Shopee aku ini sahaja.
+  9. Nak pergi kelas kena naik sampan ke?.
+
+ABSTRACTIVE SUMMARY:
+  "Saya terkejut beruk tengok universiti aku itu sebab kelas-kelas, kuliah, dewan kita semua guna binaan kayu" "Sebelum saya mula video ini, jika korang berminat dengan konten aku, minat dengan rasa humor saya," kata seorang.
+
+============================================================
+QUICK COMPARISON
+============================================================
+Method       Extracted    Abstractive Length  
+────────────────────────────────────────────
+textrank     38           47 words
+lsa          38           35 words
+electra      9            34 words

@@ -11,11 +11,13 @@ from datetime import datetime
 
 from preprocess import preprocess_malay_transcript
 from extractive import run_extractive
-from abstractive import abstractive_summarize
+from abstractive import abstractive_summarize, AVAILABLE_MODELS, DEFAULT_MODEL_KEY
 
 
 def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
-                 output_dir="summaries", skip_preprocess=False):
+                 output_dir="summaries", skip_preprocess=False,
+                 abs_model=DEFAULT_MODEL_KEY, abs_mode="beam",
+                 postprocess=True):
     """
     Full summarization pipeline: Preprocess → Extractive → Abstractive → Save Report.
     
@@ -25,17 +27,25 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         mode: "meeting" for spoken transcripts, "written" for news/articles
         output_dir: Directory to save the output report
         skip_preprocess: If True, skip preprocessing (input is already clean)
+        abs_model: Abstractive model key ("t5-small", "t5-base", "ms-t5-small", "ms-t5-base")
+        abs_mode: Decoding strategy ("beam" or "sampling")
+        postprocess: If True, use Malaya's built-in ROUGE postprocessing
     
     Returns:
         dict with keys: cleaned_text, extractive_result, abstractive_summary, report_path
     """
     # ── STEP 0: Load Input ──────────────────────────────────────
+    abs_info = AVAILABLE_MODELS.get(abs_model, {})
+    abs_label = abs_info.get('description', abs_model)
+
     print(f"\n{'='*60}")
     print(f"  MALAY TEXT SUMMARIZATION PIPELINE")
     print(f"{'='*60}")
     print(f"  Input:       {input_path}")
     print(f"  Mode:        {mode}")
     print(f"  Extractive:  {extractive_method.upper()}")
+    print(f"  Abstractive: {abs_model} ({abs_mode})")
+    print(f"  Postprocess: {postprocess}")
     print(f"  Preprocess:  {'Skipped' if skip_preprocess else 'Enabled'}")
     print(f"{'='*60}\n")
 
@@ -67,10 +77,15 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
     print()
 
     # ── STEP 3: Abstractive Summarization ───────────────────────
-    print(f"[Step 3/3] Abstractive Summarization (Malaya T5-Base)...")
+    print(f"[Step 3/3] Abstractive Summarization ({abs_model}, {abs_mode})...")
     print(f"  Rewriting for natural flow and accuracy (this may take a moment)...\n")
 
-    abstractive_summary = abstractive_summarize(extractive_result['combined'])
+    abstractive_summary = abstractive_summarize(
+        extractive_result['combined'],
+        model=abs_model,
+        mode=abs_mode,
+        postprocess=postprocess
+    )
 
     print(f"  FINAL SUMMARY:")
     print(f"  {abstractive_summary}\n")
@@ -90,6 +105,8 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         f.write(f"Input:              {input_path}\n")
         f.write(f"Mode:               {mode}\n")
         f.write(f"Extractive Method:  {extractive_method.upper()}\n")
+        f.write(f"Abstractive Model:  {abs_model} ({abs_mode})\n")
+        f.write(f"Postprocess:        {postprocess}\n")
         f.write(f"Generated:          {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"{'='*60}\n\n")
 
@@ -97,7 +114,7 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         for i, sent in enumerate(extractive_result['sentences'], 1):
             f.write(f"{i}. {sent}\n")
 
-        f.write(f"\n--- FINAL ABSTRACTIVE SUMMARY (T5-Base) ---\n")
+        f.write(f"\n--- FINAL ABSTRACTIVE SUMMARY ({abs_model.upper()}, {abs_mode.upper()}) ---\n")
         f.write(abstractive_summary)
         f.write("\n")
 
@@ -121,8 +138,9 @@ if __name__ == "__main__":
         epilog="""
 Examples:
   python pipeline.py --input stt_transcription/culture_shock.txt --method textrank
-  python pipeline.py --input stt_transcription/culture_shock.txt --method electra
+  python pipeline.py --input stt_transcription/culture_shock.txt --method electra --abs-model ms-t5-base
   python pipeline.py --input cleaned_text/news.txt --method lsa --mode written --skip-preprocess
+  python pipeline.py --input stt_transcription/culture_shock.txt --method textrank --abs-mode sampling
         """
     )
     parser.add_argument("--input", required=True, help="Path to input text file")
@@ -134,6 +152,13 @@ Examples:
                         help="Directory to save output reports (default: summaries)")
     parser.add_argument("--skip-preprocess", action="store_true",
                         help="Skip preprocessing (use if input is already cleaned)")
+    parser.add_argument("--abs-model", default=DEFAULT_MODEL_KEY,
+                        choices=list(AVAILABLE_MODELS.keys()),
+                        help=f"Abstractive model (default: {DEFAULT_MODEL_KEY})")
+    parser.add_argument("--abs-mode", choices=["beam", "sampling"], default="beam",
+                        help="Decoding strategy: 'beam' (accurate) or 'sampling' (natural) (default: beam)")
+    parser.add_argument("--no-postprocess", action="store_true",
+                        help="Disable Malaya's built-in ROUGE postprocessing")
 
     args = parser.parse_args()
 
@@ -146,5 +171,8 @@ Examples:
         extractive_method=args.method,
         mode=args.mode,
         output_dir=args.output_dir,
-        skip_preprocess=args.skip_preprocess
+        skip_preprocess=args.skip_preprocess,
+        abs_model=args.abs_model,
+        abs_mode=args.abs_mode,
+        postprocess=not args.no_postprocess
     )
