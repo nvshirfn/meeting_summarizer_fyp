@@ -1,0 +1,78 @@
+EXTRACTIVE METHOD COMPARISON REPORT
+============================================================
+Input:     cleaned_text/pendidikan.txt
+Mode:      meeting
+Abs Model: ms-t5-base (beam)
+Generated: 2026-04-01 22:08:50
+============================================================
+
+────────────────────────────────────────────────────────────
+METHOD: TEXTRANK
+────────────────────────────────────────────────────────────
+Extracted 8 / 40 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Dalam titah tersebut, Baginda menegaskan bahawa “sistem pendidikan negara perlu terus diperkasakan sebagai asas pembinaan bangsa, jati diri dan masa hadapan negara.
+  2. Ungkapan ini mengangkat pendidikan sebagai tunjang kepada kelangsungan negara bangsa, bukan hanya sebagai alat mobiliti sosial atau laluan ke pasaran kerja semata-mata.
+  3. Sejarah membuktikan bahawa negara yang kuat bukan hanya dibina atas asas ekonomi, tetapi atas kualiti rakyatnya dan kualiti rakyat itu bermula di bilik darjah melalui sistem pendidikan yang bermatlamatkan pembinaan bangsa dan negara.
+  4. Jika pendidikan hanya melahirkan individu yang cemerlang secara akademik tetapi kosong nilai, kita mungkin berjaya membina tenaga kerja, namun gagal membina warganegara.
+  5. Inilah inti sebenar yang tersirat dalam titah Baginda tersebut: pendidikan ialah projek pembinaan bangsa, bukan semata-mata projek ekonomi.
+  6. Ia terbahagi kepada tiga aliran utama iaitu Sekolah Kebangsaan (SK), Sekolah Jenis Kebangsaan (SJK) dan sekolah swasta termasuk sekolah antarabangsa.
+  7. Jika sistem pendidikan terus terpisah tanpa jambatan, kita mungkin melahirkan generasi yang berjaya secara individu, tetapi lemah sebagai bangsa.
+  8. Ini kerana negara bangsa yang kuat tidak lahir daripada sistem yang terpisah, tetapi daripada nilai yang dikongsi bersama.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Pendidikan adalah projek pembinaan bangsa, bukan semata-mata projek ekonomi
+•	Ini adalah salah satu daripada tiga sistem pendidikan utama yang digunakan oleh Raja Charles II dari United Kingdom untuk membina negara bangsa yang kuat
+•	Ia juga dikenali sebagai "pendidikan nasional" atau "sistem pendidikan nasional
+•	Dalam titah itu, Baginda menegaskan bahawa pendidikan harus terus diperkasakan sebagai tunjang kepada kelangsungan negara bangsa dan bukannya hanya sebagai alat mobiliti sosial atau laluan ke pasaran kerja semata-sama
+•	Ungkapan ini pertama kali dirumuskan dalam tulisannya pada abad ke-19
+•	Dia menyatakan bahawa jika pendidikan hanya melahirkan individu yang cemerlang secara akademik tetapi kosong nilai, kita mungkin berjaya membina tenaga kerja, namun gagal membina warganegara
+
+────────────────────────────────────────────────────────────
+METHOD: LSA
+────────────────────────────────────────────────────────────
+Extracted 8 / 40 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Maka sudah tiba masanya kita melihat pendidikan bukan sebagai pilihan peribadi semata-mata, tetapi sebagai satu tanggungjawab nasional.
+  2. Program integrasi silang aliran juga perlu dilaksanakan secara sistematik iaitu bukan sekadar program bermusim, tetapi sebagai sebahagian daripada pengalaman pendidikan.
+  3. Titah Baginda mengangkat semula makna pendidikan dalam erti yang lebih besar iaitu sebagai proses pembentukan manusia seimbang yang bukan sahaja berilmu, tetapi berakhlak, berfikir secara kritis, mempunyai tanggungjawab sosial dan berjiwa kebangsaan.
+  4. Tanpa akar nilai bersama, kemajuan material boleh bertukar menjadi krisis moral dan perpecahan sosial.
+  5. Walaupun setiap aliran mempunyai sejarah, peranan dan kekuatan tersendiri, pemisahan ini membawa implikasi besar terhadap usaha membina satu bangsa yang berkongsi identiti serta pengalaman bersama.
+  6. Jika tidak ditangani dengan bijaksana, jurang ini boleh berkembang menjadi tembok psikologi yang memisahkan generasi muda mengikut kelas sosial dan latar etnik.
+  7. Perpecahan pendidikan ini berisiko melahirkan warganegara yang saling tidak memahami, mudah terperangkap dalam stereotaip antara kaum dan kelas, serta mempunyai jurang empati yang melemahkan perpaduan nasional.
+  8. Hakikatnya, masa depan Malaysia tidak ditentukan semata-mata oleh kekayaan sumber semula jadi, kekuatan ketenteraan atau kemajuan teknologi.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Perpaduan silang aliran (juga dikenali sebagai integrasi silang aliran atau integrasi rentas aliran) adalah istilah yang digunakan di Malaysia untuk menggambarkan hubungan antara individu dan bangsa
+•	Dalam pengertian yang lebih luas, istilah ini merujuk kepada proses membentuk manusia yang seimbang yang bukan sahaja berilmu, tetapi berakhlak, berfikir secara kritis, mempunyai tanggungjawab sosial dan berjiwa kebangsaan
+•	Ini boleh menjadi krisis moral dan perpecahan sosial
+•	Oleh itu, pemisahan ini membawa implikasi besar terhadap usaha membina satu bangsa yang berkongsi identiti dan pengalaman bersama
+
+────────────────────────────────────────────────────────────
+METHOD: ELECTRA
+────────────────────────────────────────────────────────────
+Extracted 4 / 40 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Walaupun setiap aliran mempunyai sejarah, peranan dan kekuatan tersendiri, pemisahan ini membawa implikasi besar terhadap usaha membina satu bangsa yang berkongsi identiti serta pengalaman bersama.
+  2. Ungkapan ini mengangkat pendidikan sebagai tunjang kepada kelangsungan negara bangsa, bukan hanya sebagai alat mobiliti sosial atau laluan ke pasaran kerja semata-mata.
+  3. Ukuran ini penting, tetapi tidak mencukupi.
+  4. Titah Seri Paduka Baginda bukan sekadar peringatan, tetapi merupakan seruan untuk membina masa depan bersama.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Titah Seri Paduka Baginda , juga dikenali sebagai Titah Raja-raja atau Titah Ratu, adalah seruan untuk membina satu bangsa yang berkongsi identiti dan pengalaman bersama
+•	Ia menyatakan bahawa setiap aliran mempunyai sejarah, peranan dan kekuatan tersendiri, tetapi bukan hanya sebagai alat mobiliti sosial atau laluan ke pasaran kerja semata-mata
+
+============================================================
+QUICK COMPARISON
+============================================================
+Method       Extracted    Abstractive Length  
+────────────────────────────────────────────
+textrank     8            115 words
+lsa          8            87 words
+electra      4            53 words

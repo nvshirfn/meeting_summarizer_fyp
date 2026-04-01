@@ -6,31 +6,64 @@ Supports 3 methods: TextRank, LSA, and ELECTRA
 import numpy as np
 
 
+def _apply_patches():
+    import inspect
+    import scipy
+    if getattr(_apply_patches, "called", False): return
+    _apply_patches.called = True
+    
+    if not hasattr(inspect, 'getargspec'):
+        inspect.getargspec = inspect.getfullargspec
+
+    if not hasattr(scipy, 'asarray'):
+        scipy.asarray = np.asarray
+    if not hasattr(scipy, 'ones'):
+        scipy.ones = np.ones
+    if not hasattr(scipy, 'zeros'):
+        scipy.zeros = np.zeros
+    if not hasattr(scipy, 'array'):
+        scipy.array = np.array
+
+
 def extractive_textrank(text, ratio=0.20, min_sentences=3):
     """
-    Extractive summarization using Sumy TextRank.
-    Graph-based method — fast, language-agnostic.
-    
-    Args:
-        text: Input text to summarize
-        ratio: Fraction of sentences to extract (default 20%)
-        min_sentences: Minimum number of sentences to extract
-    
-    Returns:
-        dict with keys: method, sentences, combined, total_sentences, extracted_count
+    Extractive summarization using TFIDF + NetworkX (TextRank) tuned for Malay.
+    Replaces sumy with a custom TextRank utilizing Malay stopwords.
     """
-    from sumy.parsers.plaintext import PlaintextParser
-    from sumy.nlp.tokenizers import Tokenizer
-    from sumy.summarizers.text_rank import TextRankSummarizer
-
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer = TextRankSummarizer()
-
-    total_sentences = len(parser.document.sentences)
+    _apply_patches()
+    import networkx as nx
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+    
+    total_sentences_raw = [s.strip(' \t\n\r"”“\'‘’') for s in text.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
+    sentences = [s + '.' if not s.endswith('.') else s for s in total_sentences_raw]
+    
+    total_sentences = len(sentences)
     sentences_to_extract = max(min_sentences, int(total_sentences * ratio))
-
-    top_sentences_raw = summarizer(parser.document, sentences_to_extract)
-    top_sentences = [str(s) for s in top_sentences_raw]
+    
+    if total_sentences <= sentences_to_extract:
+        top_sentences = sentences
+    else:
+        try:
+            from malaya.text.function import get_stopwords
+            stopwords = get_stopwords()
+        except:
+            stopwords = ["yang", "dan", "untuk", "di", "ke", "dari", "ini", "itu", "dengan", "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia", "dalam", "akan"]
+            
+        vectorizer = TfidfVectorizer(stop_words=stopwords)
+        try:
+            X = vectorizer.fit_transform(sentences)
+            similarity_matrix = cosine_similarity(X)
+            
+            nx_graph = nx.from_numpy_array(similarity_matrix)
+            scores = nx.pagerank(nx_graph)
+            
+            ranked_sentences = sorted(((scores[i], s) for i, s in enumerate(sentences)), reverse=True)
+            top_sentences = [s for score, s in ranked_sentences[:sentences_to_extract]]
+            
+            top_sentences = sorted(top_sentences, key=lambda x: sentences.index(x))
+        except Exception:
+            top_sentences = sentences[:sentences_to_extract]
 
     return {
         "method": "textrank",
@@ -43,29 +76,43 @@ def extractive_textrank(text, ratio=0.20, min_sentences=3):
 
 def extractive_lsa(text, ratio=0.20, min_sentences=3):
     """
-    Extractive summarization using Sumy LSA (Latent Semantic Analysis).
-    Topic-aware method — good diversity of extracted sentences.
-    
-    Args:
-        text: Input text to summarize
-        ratio: Fraction of sentences to extract (default 20%)
-        min_sentences: Minimum number of sentences to extract
-    
-    Returns:
-        dict with keys: method, sentences, combined, total_sentences, extracted_count
+    Extractive summarization using Malaya's unsupervised SKLearn interface (LSA).
+    Native Malay processing, replaces sumy LSA.
     """
-    from sumy.parsers.plaintext import PlaintextParser
-    from sumy.nlp.tokenizers import Tokenizer
-    from sumy.summarizers.lsa import LsaSummarizer
+    _apply_patches()
+    import malaya
+    from sklearn.decomposition import TruncatedSVD
+    from sklearn.feature_extraction.text import TfidfVectorizer
 
-    parser = PlaintextParser.from_string(text, Tokenizer("english"))
-    summarizer = LsaSummarizer()
-
-    total_sentences = len(parser.document.sentences)
+    total_sentences_raw = [s.strip(' \t\n\r"”“\'‘’') for s in text.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
+    sentences = [s + '.' if not s.endswith('.') else s for s in total_sentences_raw]
+    total_sentences = len(sentences)
     sentences_to_extract = max(min_sentences, int(total_sentences * ratio))
 
-    top_sentences_raw = summarizer(parser.document, sentences_to_extract)
-    top_sentences = [str(s) for s in top_sentences_raw]
+    if total_sentences <= sentences_to_extract:
+        top_sentences = sentences
+    else:
+        try:
+            from malaya.text.function import get_stopwords
+            stopwords = get_stopwords()
+        except:
+            stopwords = ["yang", "dan", "untuk", "di", "ke", "dari", "ini", "itu", "dengan", "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia", "dalam", "akan"]
+
+        svd = TruncatedSVD(n_components=max(1, sentences_to_extract // 2))
+        vectorizer = TfidfVectorizer(stop_words=stopwords)
+        try:
+            extractive_model = malaya.summarization.extractive.sklearn(svd, vectorizer)
+            clean_text = " ".join(sentences)
+            summary_data = extractive_model.sentence_level(clean_text, top_k=sentences_to_extract)
+            
+            if isinstance(summary_data, dict) and 'summary' in summary_data:
+                combined = summary_data['summary']
+                top_sentences_raw = [s.strip(' \t\n\r"”“\'‘’') for s in combined.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
+                top_sentences = [s + '.' if not s.endswith('.') else s for s in top_sentences_raw]
+            else:
+                top_sentences = sentences[:sentences_to_extract]
+        except Exception:
+            top_sentences = sentences[:sentences_to_extract]
 
     return {
         "method": "lsa",
@@ -90,27 +137,12 @@ def extractive_electra(text, ratio=0.10, min_sentences=3, max_sentences=8):
     Returns:
         dict with keys: method, sentences, combined, total_sentences, extracted_count
     """
-    import inspect
-    import scipy
-
-    # Python 3.11+ compatibility patch for Malaya
-    if not hasattr(inspect, 'getargspec'):
-        inspect.getargspec = inspect.getfullargspec
-
-    # SciPy 1.13+ compatibility patch for Malaya
-    if not hasattr(scipy, 'asarray'):
-        scipy.asarray = np.asarray
-    if not hasattr(scipy, 'ones'):
-        scipy.ones = np.ones
-    if not hasattr(scipy, 'zeros'):
-        scipy.zeros = np.zeros
-    if not hasattr(scipy, 'array'):
-        scipy.array = np.array
+    _apply_patches()
 
     import malaya
 
     # Estimate total sentences
-    total_sentences = len([s for s in text.split('.') if len(s.strip()) > 5])
+    total_sentences = len([s for s in text.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5])
     sentences_to_extract = min(max_sentences, max(min_sentences, int(total_sentences * ratio)))
 
     # Load ELECTRA model
@@ -125,7 +157,7 @@ def extractive_electra(text, ratio=0.10, min_sentences=3, max_sentences=8):
 
     # Parse individual sentences from the combined summary
     combined = summary_data['summary']
-    sentences = [s.strip() for s in combined.split('.') if len(s.strip()) > 5]
+    sentences = [s.strip(' \t\n\r"”“\'‘’') for s in combined.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
     # Add periods back
     sentences = [s + '.' if not s.endswith('.') else s for s in sentences]
 

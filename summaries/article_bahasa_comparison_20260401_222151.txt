@@ -1,0 +1,82 @@
+EXTRACTIVE METHOD COMPARISON REPORT
+============================================================
+Input:     cleaned_text/article_bahasa.txt
+Mode:      meeting
+Abs Model: ms-t5-base (beam)
+Generated: 2026-04-01 22:21:51
+============================================================
+
+────────────────────────────────────────────────────────────
+METHOD: TEXTRANK
+────────────────────────────────────────────────────────────
+Extracted 9 / 49 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Selain itu, integrasi penggunaan bahasa Melayu dalam subjek lain juga boleh memperkukuh penguasaan bahasa dalam kalangan pelajar.
+  2. Budaya dan seni adalah medium yang kukuh untuk memelihara bahasa Melayu.
+  3. Penggunaan bahasa rojak sebenarnya menunjukkan penguasaan seseorang penutur bahasa Melayu sangat lemah dan juga dilihat kurang atau tiada semangat cintakan bahasa kebangsaan.
+  4. Kerjasama dengan institusi pendidikan, media dan industri adalah penting untuk memastikan penggunaan bahasa Melayu diperluaskan dalam pelbagai bidang.
+  5. Mungkin kita pernah melihat beberapa inisiatif khusus yang sedang dijalankan untuk mempromosikan penggunaan bahasa Melayu dalam kalangan profesional seperti Program Inisiatif Memperkasakan Bahasa Melayu, yang mana Dewan Bahasa dan Pustaka (DBP) telah melancarkan program tersebut yang melibatkan pelbagai aktiviti dan kerjasama dengan institusi pendidikan dan organisasi profesional.
+  6. Program ini bertujuan untuk mengukuhkan penggunaan bahasa Melayu sebagai bahasa ilmu dan komunikasi.
+  7. Antara usaha lain yang harus dicontohi dan dipuji adalah melalui penganjuran Karnival Memartabatkan Bahasa Melayu, Memperkukuh Bahasa Inggeris (MBMMBI).
+  8. Antara lain tujuan karnival ini juga untuk memperkasakan penggunaan bahasa Melayu di samping memperkukuh penguasaan bahasa Inggeris.
+  9. Marilah kita bersama-sama memartabatkan bahasa Melayu sebagai bahasa kebangsaan yang kita banggakan.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Bahasa Melayu rojak ialah bahasa Melayu yang dituturkan oleh orang Melayu
+•	Bahasa Melayu merupakan bahasa rasmi negara Malaysia, dan ia merupakan bahasa kebangsaan Malaysia
+•	Ia merupakan bahasa kedua terbesar di Malaysia selepas bahasa Inggeris
+•	Terdapat kira-kira 1 juta penutur bahasa Melayu di seluruh dunia, dengan lebih daripada satu juta penutur berbahasa Melayu di kalangan pelajar sekolah rendah dan menengah
+•	Walaupun bahasa Melayu adalah bahasa rasmi Malaysia, ia tidak boleh dikelirukan dengan bahasa Melayu sebagai bahasa ibunda seseorang
+•	Dalam konteks ini, bahasa Melayu dianggap sebagai bahasa pertama yang diterima pakai oleh rakyat Malaysia
+•	Oleh itu, penggunaan bahasa Melayu dalam masyarakat Melayu telah meningkat dengan ketara sejak tahun 1990-an
+
+────────────────────────────────────────────────────────────
+METHOD: LSA
+────────────────────────────────────────────────────────────
+Extracted 9 / 49 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Kurikulum sekolah perlu menekankan pengajaran bahasa Melayu dengan cara yang lebih menarik dan relevan.
+  2. Antara usaha lain yang harus dicontohi dan dipuji adalah melalui penganjuran Karnival Memartabatkan Bahasa Melayu, Memperkukuh Bahasa Inggeris (MBMMBI).
+  3. Pelan tindakan tersebut pada asasnya terdiri daripada empat objektif utama iaitu pertama; membudayakan bahasa Melayu sebagai bahasa ilmu, kedua; menghasilkan graduan yang berketrampilan dalam bahasa Melayu.
+  4. Media sosial turut menyumbang usaha dalam memperluas penguasaan bahasa Melayu melalui pengisian kreatif seperti video pendek dan infografik dalam bahasa Melayu.
+  5. Ketiga; merealisasikan bahasa Melayu sebagai wadah pembangunan negara dan keempat, memperkukuh peranan bahasa Melayu sebagai sumber rujukan setanding dengan bahasa asing.
+  6. Penggunaan bahasa rojak sebenarnya menunjukkan penguasaan seseorang penutur bahasa Melayu sangat lemah dan juga dilihat kurang atau tiada semangat cintakan bahasa kebangsaan.
+  7. Kita tetap perlu merujuk kepada sumber – sumber rujukan bahasa Melayu sedia ada supaya maklumat yang diterima itu pasti kesahihannya Peranan keluarga dan komuniti juga dikira amat penting.
+  8. Program ini bertujuan untuk mengukuhkan penggunaan bahasa Melayu sebagai bahasa ilmu dan komunikasi.
+  9. Aplikasi pembelajaran bahasa, permainan interaktif dan platform media sosial yang tumbuh seperti cendawan selepas hujan juga boleh digunakan untuk mengajar dan menggalakkan penggunaan bahasa Melayu.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Bahasa Melayu adalah bahasa yang dituturkan oleh orang-orang Melayu di Malaysia
+•	Bahasa Melayu juga merupakan bahasa rasmi negara ini, dan dianggap sebagai bahasa rojak atau "rojak" dalam bahasa Melayu
+•	Ia juga digunakan untuk merujuk kepada bahasa Melayu sebagai wadah pembangunan negara dan keempat; ia juga boleh digunakan sebagai sumber rujukan setanding dengan bahasa asing seperti bahasa Perancis, Jerman, Itali, Portugis, Sepanyol, Belanda, Rusia, Turki, Ukraine, Poland, Romania, Serbia, Croatia, Slovenia, Slovakia, Montenegro, Macedonia Utara, Republik Czech, Lithuania, Hungary, Sweden, Denmark, Iceland, Estonia, Yunani, Arab Saudi, Jepun, Korea Selatan, Taiwan, Indonesia, Filipina, Thailand, Singapura, China, India, Sri Lanka, Myanmar, Vietnam, Kemboja, Laos, Timor Leste, Suriname, Papua New Guinea, Kepulauan Solomon, dan lain-lain
+•	Di samping itu, bahasa Melayu telah menjadi bahasa kebangsaan sejak kemerdekaannya pada tahun 1991
+
+────────────────────────────────────────────────────────────
+METHOD: ELECTRA
+────────────────────────────────────────────────────────────
+Extracted 4 / 49 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Usaha untuk menerbitkan serta memperbanyakkan lagi buku – buku sains dan teknologi juga telah lama dimulakan.
+  2. Usaha memelihara bahasa Melayu adalah sangat penting untuk memastikan ia terus diperkasa dan berkembang seiring kemajuan teknologi global masa kini.
+  3. Tidak semua pengguna AI mempunyai pengetahuan yang baik dalam bahasa Melayu, terutama dalam konteks teknikal dan saintifik.
+  4. Teknologi kecerdasan buatan (AI) juga perlu digunakan sebaik mungkin dalam memperluas penggunaan bahasa Melayu.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Bahasa Melayu ialah bahasa Melayu yang dituturkan oleh orang Melayu
+•	Bahasa Melayu juga merupakan bahasa rasmi Malaysia
+•	Terdapat kira-kira 1 juta penutur bahasa Melayu di seluruh dunia
+
+============================================================
+QUICK COMPARISON
+============================================================
+Method       Extracted    Abstractive Length  
+────────────────────────────────────────────
+textrank     9            116 words
+lsa          9            131 words
+electra      4            32 words

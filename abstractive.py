@@ -205,7 +205,7 @@ def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
     
     if bullet_points:
         import re
-        sentences = [s.strip() for s in re.split(r'\.\s+', summary_text) if s.strip()]
+        sentences = [s.strip(' \t\n\r"”“\'‘’') for s in re.split(r'\.\s+', summary_text) if s.strip(' \t\n\r"”“\'‘’')]
         bullets = []
         for s in sentences:
             if s.endswith('.'):

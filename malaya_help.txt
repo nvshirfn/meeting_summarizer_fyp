@@ -1,0 +1,45 @@
+Help on module malaya.summarization.extractive in malaya.summarization:
+
+NAME
+    malaya.summarization.extractive
+
+FUNCTIONS
+    encoder(vectorizer)
+        Encoder interface for summarization.
+        
+        Parameters
+        ----------
+        vectorizer : object
+            encoder interface object, eg, BERT, XLNET, ALBERT, ALXLNET.
+            should have `vectorize` method.
+        
+        Returns
+        -------
+        result: malaya.model.extractive_summarization.Encoder
+    
+    sklearn(model, vectorizer)
+        sklearn interface for summarization.
+        
+        Parameters
+        ----------
+        model : object
+            Should have `fit_transform` method. Commonly:
+        
+            * ``sklearn.decomposition.TruncatedSVD`` - LSA algorithm.
+            * ``sklearn.decomposition.LatentDirichletAllocation`` - LDA algorithm.
+        vectorizer : object
+            Should have `fit_transform` method. Commonly:
+        
+            * ``sklearn.feature_extraction.text.TfidfVectorizer`` - TFIDF algorithm.
+            * ``sklearn.feature_extraction.text.CountVectorizer`` - Bag-of-Word algorithm.
+            * ``malaya.text.vectorizer.SkipGramCountVectorizer`` - Skip Gram Bag-of-Word algorithm.
+            * ``malaya.text.vectorizer.SkipGramTfidfVectorizer`` - Skip Gram TFIDF algorithm.
+        
+        Returns
+        -------
+        result: malaya.model.extractive_summarization.SKLearn
+
+FILE
+    e:\degree computer science\meeting-summarizer\venv\lib\site-packages\malaya\summarization\extractive.py
+
+
