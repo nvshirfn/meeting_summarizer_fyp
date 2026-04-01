@@ -118,9 +118,10 @@ def _load_model(model_name):
 
 
 def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
-                          max_length=256, postprocess=True,
+                          max_length=512, min_length=120, length_penalty=2.0, 
+                          postprocess=True, bullet_points=True,
                           # Beam search params
-                          num_beams=4, no_repeat_ngram_size=3,
+                          num_beams=5, no_repeat_ngram_size=3,
                           repetition_penalty=2.0, early_stopping=True,
                           # Sampling params
                           top_p=0.92, top_k=0, temperature=0.7,
@@ -165,7 +166,11 @@ def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
     loaded_model = _load_model(model_name)
 
     # Build generation kwargs based on decoding mode
-    gen_kwargs = {"max_length": max_length}
+    gen_kwargs = {
+        "max_length": max_length,
+        "min_length": min_length,
+        "length_penalty": length_penalty
+    }
 
     if mode == "beam":
         gen_kwargs.update({
@@ -196,7 +201,19 @@ def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
 
     result = loaded_model.generate([text], **gen_kwargs, **pp_kwargs)
 
-    return result[0]
+    summary_text = result[0]
+    
+    if bullet_points:
+        import re
+        sentences = [s.strip() for s in re.split(r'\.\s+', summary_text) if s.strip()]
+        bullets = []
+        for s in sentences:
+            if s.endswith('.'):
+                s = s[:-1]
+            bullets.append(f"•\t{s}")
+        return "Ringkasan AI\n" + "\n".join(bullets)
+
+    return summary_text
 
 
 # --- STANDALONE EXECUTION ---
@@ -225,8 +242,15 @@ Examples:
                         help=f"Model to use (default: {DEFAULT_MODEL_KEY})")
     parser.add_argument("--mode", choices=["beam", "sampling"], default="beam",
                         help="Decoding strategy (default: beam)")
-    parser.add_argument("--max-length", type=int, default=256,
+    parser.add_argument("--max-length", type=int, default=512,
                         help="Max summary length in tokens")
+    parser.add_argument("--min-length", type=int, default=120,
+                        help="Min summary length in tokens")
+    parser.add_argument("--length-penalty", type=float, default=2.0,
+                        help="Length penalty (>1.0 encourages longer output)")
+    parser.add_argument("--no-bullet-points", action="store_false", dest="bullet_points",
+                        help="Disable bullet points formatting")
+    parser.set_defaults(bullet_points=True)
     parser.add_argument("--no-postprocess", action="store_true",
                         help="Disable Malaya's built-in ROUGE postprocessing")
     parser.add_argument("--list-models", action="store_true",
@@ -261,7 +285,10 @@ Examples:
         model=args.model,
         mode=args.mode,
         max_length=args.max_length,
+        min_length=args.min_length,
+        length_penalty=args.length_penalty,
         postprocess=not args.no_postprocess,
+        bullet_points=args.bullet_points,
     )
 
     print(f"  SUMMARY:\n")

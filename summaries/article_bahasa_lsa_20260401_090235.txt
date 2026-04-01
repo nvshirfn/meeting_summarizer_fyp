@@ -1,0 +1,23 @@
+MALAY TEXT SUMMARIZATION REPORT
+============================================================
+Input:              cleaned_text/article_bahasa.txt
+Mode:               meeting
+Extractive Method:  LSA
+Abstractive Model:  ms-t5-base (beam)
+Postprocess:        True
+Generated:          2026-04-01 09:02:35
+============================================================
+
+--- EXTRACTIVE KEY POINTS (LSA) ---
+1. Usaha memelihara bahasa Melayu adalah sangat penting untuk memastikan ia terus diperkasa dan berkembang seiring kemajuan teknologi global masa kini.
+2. Kurikulum sekolah perlu menekankan pengajaran bahasa Melayu dengan cara yang lebih menarik dan relevan.
+3. Pembangunan laman web e-estidotmy juga harus diberi pujian kerana telah berjaya menyediakan artikel bahasa Melayu dalam bidang STEM supaya ia lebih mudah difahami.
+4. Namun, pengetahuan bahasa Melayu tetap perlu diutamakan tanpa bergantung penuh dalam keghairahan menggunakan semua kemajuan teknologi ini.
+5. Penggunaan bahasa Melayu dalam komunikasi harian di rumah adalah langkah pertama yang perlu diambil.
+6. Di peringkat komuniti pula, galakan dalam mengadakan program seperti kelas bahasa, ceramah, dan bengkel boleh dianjurkan untuk mempromosikan penggunaan bahasa Melayu dan seterusnya dapat mengukuhkan lagi kedudukannya selain meluaskan lagi penggunaannya dalam komuniti setempat.
+7. Masyarakat patut berbangga kerana terus berusaha untuk menjaga dan memartabatkan bahasa Melayu sepanjang zaman.
+8. Kerjasama dengan institusi pendidikan, media dan industri adalah penting untuk memastikan penggunaan bahasa Melayu diperluaskan dalam pelbagai bidang.
+9. Karnival MBMMBI ini dianjurkan untuk meningkatkan kemahiran dwibahasa dalam kalangan pensyarah, siswa guru dan komuniti setempat.
+
+--- FINAL ABSTRACTIVE SUMMARY (MS-T5-BASE, BEAM) ---
+Bahasa Melayu adalah bahasa yang dituturkan oleh orang-orang Melayu di seluruh dunia. Bahasa Melayu dianggap sebagai bahasa kebangsaan Malaysia.

@@ -1,0 +1,18 @@
+MALAY TEXT SUMMARIZATION REPORT
+============================================================
+Input:              cleaned_text/article_bahasa.txt
+Mode:               meeting
+Extractive Method:  ELECTRA
+Abstractive Model:  ms-t5-base (beam)
+Postprocess:        True
+Generated:          2026-04-01 09:03:26
+============================================================
+
+--- EXTRACTIVE KEY POINTS (ELECTRA) ---
+1. Usaha untuk menerbitkan serta memperbanyakkan lagi buku – buku sains dan teknologi juga telah lama dimulakan.
+2. Usaha memelihara bahasa Melayu adalah sangat penting untuk memastikan ia terus diperkasa dan berkembang seiring kemajuan teknologi global masa kini.
+3. Tidak semua pengguna AI mempunyai pengetahuan yang baik dalam bahasa Melayu, terutama dalam konteks teknikal dan saintifik.
+4. Teknologi kecerdasan buatan (AI) juga perlu digunakan sebaik mungkin dalam memperluas penggunaan bahasa Melayu.
+
+--- FINAL ABSTRACTIVE SUMMARY (MS-T5-BASE, BEAM) ---
+Bahasa Melayu ialah bahasa Melayu yang dituturkan oleh orang Melayu. Bahasa Melayu juga merupakan bahasa rasmi Indonesia.

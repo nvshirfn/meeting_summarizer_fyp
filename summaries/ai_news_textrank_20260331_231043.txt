@@ -1,0 +1,18 @@
+MALAY TEXT SUMMARIZATION REPORT
+============================================================
+Input:              cleaned_text/ai_news.txt
+Mode:               meeting
+Extractive Method:  TEXTRANK
+Abstractive Model:  ms-t5-base (beam)
+Postprocess:        True
+Generated:          2026-03-31 23:10:43
+============================================================
+
+--- EXTRACTIVE KEY POINTS (TEXTRANK) ---
+1. Dalam landskap kecerdasan buatan (AI) yang semakin kompetitif, YTL AI Labs memantapkan lagi langkah Malaysia ke hadapan dengan memperkenalkan model baharu, ILMU-Nemo-30B, sebuah pembangunan strategik hasil kerjasama dengan NVIDIA yang menumpukan kepada keupayaan AI berdaulat berteraskan data dan konteks tempatan.
+2. Dibangunkan menggunakan rangka kerja NVIDIA NeMo, model ini dilatih melalui kerjasama rapat antara jurutera penyelidik YTL AI Labs dan NVIDIA, menggunakan set data tempatan yang dihoskan di platform YTL AI Cloud yang selamat.
+3. Sementara itu, Ketua Pegawai Eksekutif YTL AI Labs, Foong Chee Mun berkata, AI Labs pula menegaskan komitmen berterusan syarikat dalam memacu inovasi melalui pembangunan model yang disesuaikan dengan keperluan tempatan bagi membuka ruang kepada organisasi untuk membina penyelesaian lebih pintar dan kompetitif.
+4. Dilancarkan pada Sidang Kemuncak AI ASEAN pada Ogos tahun lalu, ILMU merupakan AI Malaysia yang dibangunkan oleh rakyat Malaysia untuk rakyat Malaysia, dengan penekanan terhadap sensitiviti budaya serta daya saing global.
+
+--- FINAL ABSTRACTIVE SUMMARY (MS-T5-BASE, BEAM) ---
+YTL AI Labs ialah sebuah syarikat yang berpangkalan di Malaysia yang membangunkan model kecerdasan buatan (AI) yang disesuaikan dengan keperluan tempatan. Dilancarkan pada Sidang Kemuncak AI ASEAN 2012, ia bertujuan untuk meningkatkan daya saing global melalui pembangunan model baru, ILMU-Nemo-30B, berdasarkan kerangka kerja NVIDIA NeMo.

@@ -1,0 +1,18 @@
+MALAY TEXT SUMMARIZATION REPORT
+============================================================
+Input:              cleaned_text/ai_news.txt
+Mode:               meeting
+Extractive Method:  LSA
+Abstractive Model:  ms-t5-base (beam)
+Postprocess:        True
+Generated:          2026-03-31 23:28:40
+============================================================
+
+--- EXTRACTIVE KEY POINTS (LSA) ---
+1. Inisiatif ini menyaksikan pembangunan model agentik berkuasa yang disesuaikan dengan set data tempatan Malaysia sekali gus mencatatkan peningkatan ketara sebanyak 23 peratus dalam skor penanda aras MalayMMLU.
+2. Pendekatan ini sekali gus meneguhkan kedudukan Malaysia dalam membangunkan AI bertaraf dunia yang selari dengan nilai budaya, linguistik dan etika tempatan.
+3. Mengulas mengenai inisiatif tersebut, Pengarah Urusan YTL Power International Berhad, Datuk Seri Yeoh Seok Hong berkata, kerjasama dengan NVIDIA menjadi pemangkin penting dalam usaha membangunkan keupayaan AI berdaulat negara di samping menggabungkan kekuatan teknologi global dan kepakaran tempatan.
+4. “Kami menyediakan akses kepada model agentik tercanggih yang telah disesuaikan mengikut keperluan tempatan khusus untuk pembangun dan perniagaan di Malaysia.
+
+--- FINAL ABSTRACTIVE SUMMARY (MS-T5-BASE, BEAM) ---
+Inisiatif YTL Power International Berhad adalah inisiatif Malaysia yang bertujuan untuk membangunkan model agentik berkuasa yang disesuaikan dengan set data tempatan Malaysia sekali gus mencatatkan peningkatan ketara 23 peratus dalam skor penanda aras MalayMMLU.

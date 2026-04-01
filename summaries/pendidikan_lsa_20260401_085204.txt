@@ -1,0 +1,21 @@
+MALAY TEXT SUMMARIZATION REPORT
+============================================================
+Input:              cleaned_text/pendidikan.txt
+Mode:               meeting
+Extractive Method:  LSA
+Abstractive Model:  ms-t5-base (beam)
+Postprocess:        True
+Generated:          2026-04-01 08:52:04
+============================================================
+
+--- EXTRACTIVE KEY POINTS (LSA) ---
+1. Namun, dalam wacana awam hari ini, pendidikan sering disempitkan kepada ukuran yang bersifat teknikal seperti keputusan peperiksaan, kedudukan ranking, kebolehpasaran graduan dan kebolehan menjana pendapatan.
+2. Walaupun setiap aliran mempunyai sejarah, peranan dan kekuatan tersendiri, pemisahan ini membawa implikasi besar terhadap usaha membina satu bangsa yang berkongsi identiti serta pengalaman bersama.
+3. Sekolah swasta dan antarabangsa pula, tanpa disedari, mewujudkan jurang kelas sosial yang semakin ketara apabila hanya mampu diakses oleh kelompok tertentu.
+4. Jika tidak ditangani dengan bijaksana, jurang ini boleh berkembang menjadi tembok psikologi yang memisahkan generasi muda mengikut kelas sosial dan latar etnik.
+5. Sekolah Kebangsaan pula wajar diperkasa semula sebagai pilihan utama semua kaum melalui peningkatan kualiti, kemudahan, penguasaan bahasa serta keyakinan awam.
+6. Pada masa yang sama, sekolah swasta perlu dikawal selia agar selari dengan aspirasi kebangsaan, bukan hanya mengejar keuntungan atau status eksklusif.
+7. Jika sistem pendidikan terus terpisah tanpa jambatan, kita mungkin melahirkan generasi yang berjaya secara individu, tetapi lemah sebagai bangsa.
+
+--- FINAL ABSTRACTIVE SUMMARY (MS-T5-BASE, BEAM) ---
+Dalam pendidikan, jurang kelas sosial (juga dikenali sebagai jurang kelas atau jurang kelas) adalah perbezaan antara kelas sosial dan latar belakang etnik. Istilah ini juga boleh digunakan untuk merujuk kepada pemisahan kelas sosial yang lebih besar dari satu generasi ke generasi yang lain.
