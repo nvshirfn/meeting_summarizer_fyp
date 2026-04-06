@@ -18,43 +18,136 @@ def preprocess_malay_transcript(text, mode="meeting"):
     if mode == "meeting":
         # === MEETING/SPOKEN TEXT PROCESSING ===
 
-        # 1. NON-LEXICAL FILLERS
-        # "Thinking sounds" with no meaning: "err", "emm", "ahh"
-        non_lexical = [r'\berr+\b', r'\bemm+\b', r'\bahh+\b', r'\behh+\b', r'\buhm\b']
-        
-        # 2. PARTICLES (Emphasis/Social markers)
-        # Add flavor to speech but are "noise" for NLP: "lah", "kan", "eh"
-        particles = [r'\bkan[.,!?]?\b', r'\blah[.,!?]?\b', r'\beh[.,!?]?\b']
+        # 1. REMOVE WORDS (Fillers, Particles, Interjections, Vocatives)
+        remove_list = [
+            'ah', 'aa', 'ahh', 'alah', 'aiyoh', 'aiyaya', 'bruh', 'beb', 'babe', 
+            'ceh', 'ehh', 'err', 'emm', 'fuh', 'ha', 'haa', 'halah', 'hekeleh', 
+            'hm', 'hmm', 'kan', 'lah', 'mat', 'ouh', 'peh', 'uhm', 'wuih'
+        ]
+        remove_patterns = [rf'\b{word}[.,!?]?\b' for word in remove_list]
 
-        # 3. TRANSITIONS & "FLUFF" WORDS
-        # Words used as fillers or structural bridges with low info value
-        fluff_words = [r'\bapa itu\b', r'\bapa tu\b', r'\bright\b']
-
-        # 4. SLANG / INFORMAL WORD REPLACEMENT
-        # Normalize informal Malay to standard Malay
+        # 2. SLANG / INFORMAL / ENGLISH WORD REPLACEMENT
         replacements = {
-            r'\bkat\b': 'dekat',
-            r'\btu\b': 'itu',
-            r'\bje\b': 'sahaja',
-            r'\btak\b': 'tidak',
-            r'\btapi\b': 'tetapi',
-            r'\bsikit\b': 'sedikit',
-            r'\bni\b': 'ini',
-            r'\bso\b': 'jadi',
-            r'\bmostly\b': 'kebanyakan',
+            r'\bambik\b': 'ambil',
+            r'\badoi\b': 'aduh',
+            r'\bakak\b': 'kak',
+            r'\basal\b': 'kenapa',
+            r'\bapasal\b': 'kenapa',
+            r'\baje\b': 'sahaja',
+            r'\bbantai\b': 'hentam',
+            r'\bbagitahu\b': 'beritahu',
+            r'\bbagitau\b': 'beritahu',
+            r'\bbagitahulah\b': 'beritahulah',
+            r'\bbagitaulah\b': 'beritahulah',
+            r'\bcamne\b': 'macam mana',
+            r'\bcamni\b': 'macam ini',
+            r'\bcamtu\b': 'macam itu',
+            r'\bcenggitu\b': 'macam itu',
+            r'\bcenggini\b': 'macam ini',
+            r'\bcite\b': 'cerita',
+            r'\bciter\b': 'cerita',
+            r'\bcokia\b': 'biasa-biasa',
             r'\bdiorang\b': 'mereka',
-            r'\bstill\b': 'masih',
+            r'\bdia orang\b': 'mereka',
+            r'\bdah\b': 'sudah',
+            r'\bduk\b': 'duduk',
+            r'\bdulu\b': 'dahulu',
+            r'\bgi\b': 'pergi',
+            r'\bgak\b': 'juga',
+            r'\bgostan\b': 'undur',
+            r'\bje\b': 'sahaja',
+            r'\bjom\b': 'mari',
+            r'\bjomlah\b': 'marilah',
+            r'\bjap\b': 'sekejap',
+            r'\bkejap\b': 'sekejap',
+            r'\bkat\b': 'dekat',
+            r'\bkarok\b': 'karaoke',
+            r'\bkeuangan\b': 'kewangan',
+            r'\bkorang\b': 'kamu semua',
+            r'\bkitorang\b': 'kami',
+            r'\bkitaorang\b': 'kami',
+            r'\bkita orang\b': 'kami',
+            r'\bkecek\b': 'cakap',
+            r'\bkot\b': 'agaknya',
+            r'\bko\b': 'kau',
+            r'\bkasi\b': 'beri',
+            r'\bkesehatan\b': 'kesihatan',
+            r'\blast-last\b': 'akhirnya',
+            r'\blast last\b': 'akhirnya',
+            r'\blu\b': 'dahulu',
+            r'\blaki\b': 'lelaki',
+            r'\bleklok\b': 'elok-elok',
+            r'\bmacam contoh\b': 'contohnya',
+            r'\bnego\b': 'runding',
+            r'\bni\b': 'ini',
+            r'\bnak\b': 'mahu',
+            r'\bnaklah\b': 'mahu',
+            r'\bno hal\b': 'tiada masalah',
+            r'\bngam\b': 'sesuai',
+            r'\bngam-ngam\b': 'tepat-tepat',
+            r'\bnak-nak\b': 'lebih-lebih lagi',
+            r'\bok\b': 'okey',
+            r'\bokay\b': 'okey',
+            r'\botomatik\b': 'automatik',
+            r'\bpas\b': 'selepas',
+            r'\bpastu\b': 'selepas itu',
+            r'\bpi\b': 'pergi',
+            r'\bpayah\b': 'susah',
+            r'\bpape\b': 'apa-apa',
+            r'\brilek\b': 'bertenang',
+            r'\bsikit\b': 'sedikit',
+            r'\bskang\b': 'sekarang',
+            r'\bsat\b': 'sekejap',
+            r'\bsaja\b': 'sahaja',
+            r'\bsaje\b': 'sahaja',
+            r'\bstylo\b': 'bergaya',
+            r'\bsehat\b': 'sihat',
+            r'\bsetel\b': 'selesai',
+            r'\btu\b': 'itu',
+            r'\btak\b': 'tidak',
+            r'\btakkan\b': 'tidak mungkin',
+            r'\btakkanlah\b': 'tidak mungkin',
+            r'\btakde\b': 'tidak ada',
+            r'\btakpe\b': 'tidak mengapa',
+            r'\btakyah\b': 'tidak perlu',
+            r'\btak payah\b': 'tidak perlu',
+            r'\btak payahlah\b': 'tidak perlulah',
+            r'\btapi\b': 'tetapi',
+            r'\btau\b': 'tahu',
+            r'\bterkejut beruk\b': 'sangat terkejut',
+            r'\bterer\b': 'hebat',
+            r'\busya\b': 'tengok',
+            r'\busya-usya\b': 'tengok-tengok',
+            r'\buang\b': 'wang',
+            r'\banyways\b': 'walau bagaimanapun',
+            r'\band\b': 'dan',
+            r'\balright\b': 'baiklah',
             r'\bbest\b': 'seronok',
-            r'\bmacam contoh\b': 'contohnya'
+            r'\bblur\b': 'keliru',
+            r'\bboring\b': 'bosan',
+            r'\bbimbo\b': 'wanita kurang cerdik',
+            r'\bchill\b': 'santai',
+            r'\bfrust\b': 'kecewa',
+            r'\bfor example\b': 'sebagai contoh',
+            r'\bmostly\b': 'kebanyakan',
+            r'\bmember\b': 'kawan',
+            r'\boutstation\b': 'kerja di luar kawasan',
+            r'\bport\b': 'tempat',
+            r'\bpower\b': 'hebat',
+            r'\brelax\b': 'bertenang',
+            r'\bso\b': 'jadi',
+            r'\bstill\b': 'masih',
+            r'\bsound\b': 'marah',
+            r'\bserious\b': 'serius',
+            r'\bsettle\b': 'selesai',
+            r'\bterror\b': 'hebat',
+            r'\bvibe\b': 'suasana'
         }
 
         for pattern, replacement in replacements.items():
             processed_text = re.sub(pattern, replacement, processed_text, flags=re.IGNORECASE)
 
-        # Apply Non-lexical, Particle, and Fluff removal
-        all_patterns = non_lexical + particles + fluff_words
-
-        for pattern in all_patterns:
+        for pattern in remove_patterns:
             processed_text = re.sub(pattern, '', processed_text, flags=re.IGNORECASE)
 
         # 5. REPETITIONS (The "Double Word" Pattern)
