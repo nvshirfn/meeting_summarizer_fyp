@@ -12,6 +12,8 @@ from datetime import datetime
 from preprocess import preprocess_malay_transcript
 from extractive import run_extractive
 from abstractive import abstractive_summarize, AVAILABLE_MODELS, DEFAULT_MODEL_KEY
+from topic_modeling import perform_topic_modeling
+from sentiment_analysis import analyze_sentiment
 
 
 def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
@@ -65,8 +67,23 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         reduction = ((original_word_count - cleaned_word_count) / original_word_count * 100) if original_word_count > 0 else 0
         print(f"  Original: {original_word_count} words → Cleaned: {cleaned_word_count} words ({reduction:.1f}% reduced)\n")
 
-    # ── STEP 2: Extractive Summarization ────────────────────────
-    print(f"[Step 2/3] Extractive Summarization ({extractive_method.upper()})...")
+    # ── STEP 2: Topic Modeling ──────────────────────────────────
+    print(f"[Step 2/5] Topic Modeling (Gensim LDA)...")
+    topics = perform_topic_modeling(cleaned_text)
+    if topics:
+        for t in topics:
+            print(f"  Topic {t['topic_id']}: {', '.join(t['words'])}")
+    else:
+        print("  Not enough text for topic modeling.")
+    print()
+
+    # ── STEP 3: Sentiment Analysis ──────────────────────────────
+    print(f"[Step 3/5] Sentiment Analysis (Malaya)...")
+    sentiment = analyze_sentiment(cleaned_text)
+    print(f"  Overall Sentiment: {sentiment}\n")
+
+    # ── STEP 4: Extractive Summarization ────────────────────────
+    print(f"[Step 4/5] Extractive Summarization ({extractive_method.upper()})...")
     extractive_result = run_extractive(cleaned_text, method=extractive_method)
 
     print(f"  Total sentences: {extractive_result['total_sentences']}")
@@ -76,8 +93,8 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         print(f"    {i}. {sent}")
     print()
 
-    # ── STEP 3: Abstractive Summarization ───────────────────────
-    print(f"[Step 3/3] Abstractive Summarization ({abs_model}, {abs_mode})...")
+    # ── STEP 5: Abstractive Summarization ───────────────────────
+    print(f"[Step 5/5] Abstractive Summarization ({abs_model}, {abs_mode})...")
     print(f"  Rewriting for natural flow and accuracy (this may take a moment)...\n")
 
     abstractive_summary = abstractive_summarize(
@@ -110,6 +127,16 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         f.write(f"Generated:          {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"{'='*60}\n\n")
 
+        f.write(f"--- DOCUMENT METADATA ---\n")
+        f.write(f"Sentiment Analysis: {str(sentiment).upper()}\n")
+        f.write(f"Identified Topics:\n")
+        if topics:
+            for t in topics:
+                f.write(f"  Topic {t['topic_id']}: {', '.join(t['words'])}\n")
+        else:
+            f.write("  None\n")
+        f.write("\n")
+
         f.write(f"--- EXTRACTIVE KEY POINTS ({extractive_method.upper()}) ---\n")
         for i, sent in enumerate(extractive_result['sentences'], 1):
             f.write(f"{i}. {sent}\n")
@@ -124,6 +151,8 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
 
     return {
         "cleaned_text": cleaned_text,
+        "topics": topics,
+        "sentiment": sentiment,
         "extractive_result": extractive_result,
         "abstractive_summary": abstractive_summary,
         "report_path": report_path

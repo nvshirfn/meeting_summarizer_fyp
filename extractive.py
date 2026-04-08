@@ -25,6 +25,25 @@ def _apply_patches():
         scipy.array = np.array
 
 
+def tokenize_sentences(text):
+    """
+    Robust sentence tokenization that handles Malay abbreviations and multiple punctuation.
+    Uses Malaya's sentence splitter with a smart Regex fallback.
+    """
+    import re
+    try:
+        from malaya.text.function import split_into_sentences
+        raw_sentences = split_into_sentences(text)
+    except Exception:
+        # Fallback if Malaya function is unavailable
+        raw_sentences = re.split(r'(?<=[.!?])\s+', text)
+        
+    sentences = [s.strip(' \t\n\r"”“\'‘’') for s in raw_sentences if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
+    # Ensure they end with punctuation for clean generation later
+    sentences = [s if re.search(r'[.!?]$', s) else s + '.' for s in sentences]
+    return sentences
+
+
 def extractive_textrank(text, ratio=0.20, min_sentences=3):
     """
     Extractive summarization using TFIDF + NetworkX (TextRank) tuned for Malay.
@@ -35,8 +54,7 @@ def extractive_textrank(text, ratio=0.20, min_sentences=3):
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.metrics.pairwise import cosine_similarity
     
-    total_sentences_raw = [s.strip(' \t\n\r"”“\'‘’') for s in text.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
-    sentences = [s + '.' if not s.endswith('.') else s for s in total_sentences_raw]
+    sentences = tokenize_sentences(text)
     
     total_sentences = len(sentences)
     sentences_to_extract = max(min_sentences, int(total_sentences * ratio))
@@ -84,8 +102,7 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3):
     from sklearn.decomposition import TruncatedSVD
     from sklearn.feature_extraction.text import TfidfVectorizer
 
-    total_sentences_raw = [s.strip(' \t\n\r"”“\'‘’') for s in text.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
-    sentences = [s + '.' if not s.endswith('.') else s for s in total_sentences_raw]
+    sentences = tokenize_sentences(text)
     total_sentences = len(sentences)
     sentences_to_extract = max(min_sentences, int(total_sentences * ratio))
 
@@ -107,8 +124,7 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3):
             
             if isinstance(summary_data, dict) and 'summary' in summary_data:
                 combined = summary_data['summary']
-                top_sentences_raw = [s.strip(' \t\n\r"”“\'‘’') for s in combined.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
-                top_sentences = [s + '.' if not s.endswith('.') else s for s in top_sentences_raw]
+                top_sentences = tokenize_sentences(combined)
             else:
                 top_sentences = sentences[:sentences_to_extract]
         except Exception:
@@ -141,8 +157,9 @@ def extractive_electra(text, ratio=0.10, min_sentences=3, max_sentences=8):
 
     import malaya
 
-    # Estimate total sentences
-    total_sentences = len([s for s in text.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5])
+    # Estimate total sentences properly
+    input_sentences = tokenize_sentences(text)
+    total_sentences = len(input_sentences)
     sentences_to_extract = min(max_sentences, max(min_sentences, int(total_sentences * ratio)))
 
     # Load ELECTRA model
@@ -157,9 +174,7 @@ def extractive_electra(text, ratio=0.10, min_sentences=3, max_sentences=8):
 
     # Parse individual sentences from the combined summary
     combined = summary_data['summary']
-    sentences = [s.strip(' \t\n\r"”“\'‘’') for s in combined.split('.') if len(s.strip(' \t\n\r"”“\'‘’')) > 5]
-    # Add periods back
-    sentences = [s + '.' if not s.endswith('.') else s for s in sentences]
+    sentences = tokenize_sentences(combined)
 
     return {
         "method": "electra",

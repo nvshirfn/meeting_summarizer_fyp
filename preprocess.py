@@ -1,7 +1,7 @@
 import re
 
 
-def preprocess_malay_transcript(text, mode="meeting"):
+def preprocess_malay_transcript(text, mode="meeting", lowercase=False):
     """
     Preprocess Malay text for summarization.
     
@@ -9,6 +9,7 @@ def preprocess_malay_transcript(text, mode="meeting"):
         text: Raw input text
         mode: "meeting" for spoken transcripts (removes fillers, slang, etc.)
               "written" for news/articles (lighter cleanup only)
+        lowercase: Whether to convert the text to lowercase (be careful using this with Abstractive models)
     
     Returns:
         Cleaned text string
@@ -159,16 +160,30 @@ def preprocess_malay_transcript(text, mode="meeting"):
 
     # === COMMON CLEANUP (both modes) ===
 
-    # Remove space before punctuation
+    # 1. MULTIPLE PUNCTUATION CLEANUP
+    # Collapse repeating punctuation (e.g., ... -> ., !!! -> !, ??? -> ?)
+    processed_text = re.sub(r'\.{2,}', '.', processed_text)
+    processed_text = re.sub(r'!{2,}', '!', processed_text)
+    processed_text = re.sub(r'\?{2,}', '?', processed_text)
+
+    # 2. SPECIAL CHARACTER REMOVAL
+    # Match any character that is NOT alphanumeric, whitespace, or standard punctuation
+    processed_text = re.sub(r'[^\w\s.,!?\'"-]', '', processed_text)
+
+    # 3. Remove space before punctuation
     processed_text = re.sub(r'\s+([.,!?])', r'\1', processed_text)
 
-    # Remove extra spaces
+    # 4. Remove extra spaces
     processed_text = re.sub(r'\s+', ' ', processed_text).strip()
+
+    # 5. LOWERCASING
+    if lowercase:
+        processed_text = processed_text.lower()
 
     return processed_text
 
 
-def preprocess_file(input_path, output_path=None, mode="meeting"):
+def preprocess_file(input_path, output_path=None, mode="meeting", lowercase=False):
     """
     Preprocess a text file and optionally save the result.
     
@@ -176,6 +191,7 @@ def preprocess_file(input_path, output_path=None, mode="meeting"):
         input_path: Path to the raw input text file
         output_path: Path to save cleaned text (None = don't save)
         mode: "meeting" or "written"
+        lowercase: Whether to convert text to lowercase
     
     Returns:
         Cleaned text string
@@ -183,7 +199,7 @@ def preprocess_file(input_path, output_path=None, mode="meeting"):
     with open(input_path, "r", encoding="utf-8") as f:
         original = f.read()
 
-    cleaned = preprocess_malay_transcript(original, mode=mode)
+    cleaned = preprocess_malay_transcript(original, mode=mode, lowercase=lowercase)
 
     if output_path:
         import os
@@ -204,6 +220,7 @@ if __name__ == "__main__":
     parser.add_argument("--output", default=None, help="Path to save cleaned text")
     parser.add_argument("--mode", choices=["meeting", "written"], default="meeting",
                         help="Processing mode: 'meeting' for spoken transcripts, 'written' for news/articles")
+    parser.add_argument("--lowercase", action="store_true", help="Enable lowercasing of text")
     
     args = parser.parse_args()
 
@@ -213,7 +230,7 @@ if __name__ == "__main__":
         base = os.path.splitext(os.path.basename(args.input))[0]
         args.output = f"cleaned_text/{base}_cleaned.txt"
 
-    cleaned = preprocess_file(args.input, args.output, mode=args.mode)
+    cleaned = preprocess_file(args.input, args.output, mode=args.mode, lowercase=args.lowercase)
 
     # Show stats
     with open(args.input, "r", encoding="utf-8") as f:
