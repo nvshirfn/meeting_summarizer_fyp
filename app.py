@@ -79,6 +79,7 @@ SENTIMENT_MODELS = {
 
 TOPIC_MODELS = {
     "lda": "LDA (Latent Dirichlet Allocation)",
+    "bertopic": "BERTopic (Transformer-based Clusters)",
 }
 
 ABSTRACTIVE_MODELS = {
@@ -134,8 +135,8 @@ def process():
     cleaned_transcript = preprocess_malay_transcript(raw_transcript, mode="meeting")
 
     # ── STEP 3  Topic Modeling ──────────────────────────────────
-    print("[Web] Step 3/5 — Topic modeling …")
-    topics = perform_topic_modeling(cleaned_transcript)
+    print(f"[Web] Step 3/5 — Topic modeling ({topic_key}) …")
+    topics = perform_topic_modeling(cleaned_transcript, method=topic_key)
 
     # ── STEP 4  Sentiment ───────────────────────────────────────
     print("[Web] Step 4/5 — Sentiment analysis …")

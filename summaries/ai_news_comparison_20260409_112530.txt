@@ -1,0 +1,69 @@
+EXTRACTIVE METHOD COMPARISON REPORT
+============================================================
+Input:     cleaned_text/ai_news.txt
+Mode:      meeting
+Abs Model: ms-t5-base (beam)
+Generated: 2026-04-09 11:25:30
+============================================================
+
+────────────────────────────────────────────────────────────
+METHOD: TEXTRANK
+────────────────────────────────────────────────────────────
+Extracted 4 / 21 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Dalam landskap kecerdasan buatan AI yang semakin kompetitif, YTL AI Labs memantapkan lagi langkah Malaysia ke hadapan dengan memperkenalkan model baharu, ILMU-Nemo-30B, sebuah pembangunan strategik hasil kerjasama dengan NVIDIA yang menumpukan kepada keupayaan AI berdaulat berteraskan data dan konteks tempatan.
+  2. Model ILMU-Nemo-30B turut memperluas rangkaian model AI buatan Malaysia dengan menawarkan keupayaan dipertingkat bagi melaksanakan tugasan kompleks yang memerlukan pemahaman mendalam terhadap konteks tempatan.
+  3. Dibangunkan menggunakan rangka kerja NVIDIA NeMo, model ini dilatih melalui kerjasama rapat antara jurutera penyelidik YTL AI Labs dan NVIDIA, menggunakan set data tempatan yang dihoskan di platform YTL AI Cloud yang selamat.
+  4. Sebagai pelengkap kepada ILMU, model bahasa skala besar multimodal pertama buatan Malaysia, ILMU-Nemo-30B menyediakan pilihan alatan lebih luas kepada pembangun dan perusahaan untuk membina aplikasi AI canggih.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	ILMU-Nemo-30B adalah model bahasa skala besar multimodal yang dikembangkan oleh YTL AI Labs dan NVIDIA
+•	Dibangunkan menggunakan kerangka NeMo, model ini bertujuan untuk meningkatkan kemampuan kecerdasan buatan Malaysia berdasarkan data dan konteks tempatan
+•	Model ini juga memperluas rangkaian model AI buatan Malaysia dengan menawarkan kemampuan dipertingkat untuk melaksanakan tugasan kompleks yang memerlukan pemahaman mendalam terhadap konteks setempat
+
+────────────────────────────────────────────────────────────
+METHOD: LSA
+────────────────────────────────────────────────────────────
+Extracted 4 / 21 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Dihoskan di YTL AI Cloud, model ini menjamin pemastautin serta keselamatan data, menjadikannya pilihan utama bagi sektor kerajaan dan industri yang mengendalikan data sensitif.
+  2. Model ILMU-Nemo-30B menjadi bukti bahawa apa yang boleh dicapai apabila kekuatan global diselaraskan dengan matlamat kebangsaan, sekali gus memastikan kemajuan AI yang dicapai adalah selamat, inklusif, dan berteraskan identiti negara, katanya menerusi satu kenyataan.
+  3. Pendekatan ini sekali gus meneguhkan kedudukan Malaysia dalam membangunkan AI bertaraf dunia yang selari dengan nilai budaya, linguistik dan etika tempatan.
+  4. Dilancarkan pada Sidang Kemuncak AI ASEAN pada Ogos tahun lalu, ILMU merupakan AI Malaysia yang dibangunkan oleh rakyat Malaysia untuk rakyat Malaysia, dengan penekanan terhadap sensitiviti budaya serta daya saing global.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Model ILMU-Nemo-30B menjamin pemastautin serta keselamatan data, menjadikannya pilihan utama bagi sektor kerajaan dan industri yang mengendalikan data sensitif
+•	Dihoskan di YTL AI Cloud, model ini menjadi bukti bahawa apa yang boleh dicapai apabila kekuatan global diselaraskan dengan matlamat nasional
+•	Ia juga memastikan kemajuan AI yang dicapai adalah selamat, inklusif, dan berasaskan identiti negara
+•	Ini sekali gus meneguhkan kedudukan Malaysia dalam membangunkan AI bertaraf dunia selari dengan nilai budaya, linguistik dan etika tempatan
+•	Pendekatan ini dilancarkan pada Sidang Kemuncak AI ASEAN pada Ogos tahun lalu, dan merupakan AI Malaysia yang dibangunkan oleh rakyat Malaysia untuk rakyat Malaysia, dengan penekanan terhadap kepekaan budaya serta daya saing global
+
+────────────────────────────────────────────────────────────
+METHOD: ELECTRA
+────────────────────────────────────────────────────────────
+Extracted 3 / 21 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Sementara itu, Ketua Pegawai Eksekutif YTL AI Labs, Foong Chee Mun berkata, AI Labs pula menegaskan komitmen berterusan syarikat dalam memacu inovasi melalui pembangunan model yang disesuaikan dengan keperluan tempatan bagi membuka ruang kepada organisasi untuk membina penyelesaian lebih pintar dan kompetitif.
+  2. Sebagai pelengkap kepada ILMU, model bahasa skala besar multimodal pertama buatan Malaysia, ILMU-Nemo-30B menyediakan pilihan alatan lebih luas kepada pembangun dan perusahaan untuk membina aplikasi AI canggih.
+  3. Rangkaian model ILMU kini boleh diakses melalui API dan telah mula digunakan oleh organisasi seperti Farben, JC Pacific dan Swipey dalam aplikasi masing-masing.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	ILMU-Nemo-30B adalah rangkaian model bahasa skala besar multimodal yang dikembangkan oleh AI Labs, sebuah syarikat yang berpusat di Malaysia
+•	Ia bertujuan untuk menjadi model bahasa berskala besar pertama yang disesuaikan dengan keperluan tempatan
+•	Rangkaian ini telah digunakan oleh organisasi seperti Farben, JC Pacific dan Swipey dalam aplikasi masing-masing
+•	Ini juga merupakan satu-satunya platform AI yang dapat diakses melalui API dan mempunyai kemampuan untuk membina aplikasi AI canggih
+
+============================================================
+QUICK COMPARISON
+============================================================
+Method       Extracted    Abstractive Length  
+────────────────────────────────────────────
+textrank     4            62 words
+lsa          4            113 words
+electra      3            73 words

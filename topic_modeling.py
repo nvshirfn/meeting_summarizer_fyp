@@ -37,18 +37,9 @@ def process_text_for_lda(text, stopwords):
             
     return texts
 
-def perform_topic_modeling(text, num_topics=3, num_words=5):
+def perform_lda(text, num_topics=3, num_words=5):
     """
     Perform Topic Modeling using Gensim LDA on the provided text.
-    
-    Args:
-        text (str): Preprocessed Malay text.
-        num_topics (int): Number of topics to discover.
-        num_words (int): Number of descriptive words per topic.
-        
-    Returns:
-        List of dictionaries containing topic details:
-        [{'topic_id': 0, 'words': ['word1', 'word2', ...]}, ...]
     """
     if not text or not text.strip():
         return []
@@ -61,9 +52,6 @@ def perform_topic_modeling(text, num_topics=3, num_words=5):
         
     # Create Dictionary
     dictionary = corpora.Dictionary(texts)
-    
-    # Optional: Filter out words that occur in less than 2 documents, or more than 50% of the documents
-    # However, for short meeting transcripts, it's safer to not filter too aggressively.
     if len(dictionary) == 0:
         return []
         
@@ -91,14 +79,123 @@ def perform_topic_modeling(text, num_topics=3, num_words=5):
         
     return extracted_topics
 
+def perform_bertopic(text, num_words=5):
+    """
+    Perform Topic Modeling using BERTopic with a multilingual sentence transformer.
+    """
+    if not text or not text.strip():
+        return []
+
+    # Local imports for heavy libraries to avoid slowing down overall startup
+    try:
+        from bertopic import BERTopic
+        from sentence_transformers import SentenceTransformer
+    except ImportError:
+        print("[Error] bertopic or sentence_transformers not installed. Fallback to []")
+        return []
+
+    # Split text into sentences
+    sentences = [sent.strip() for sent in re.split(r'[.!?]+', text) if len(sent.strip()) > 5]
+    if len(sentences) < 5:
+        print("[BERTopic] Text is too short for clustering (requires at least 5 sentences).")
+        return []
+
+    # If transcript is extremely short (< 15 sentences), BERTopic might struggle to cluster.
+    # Adjusting minimum cluster size for short documents:
+    min_cluster = 2 if len(sentences) < 20 else 3
+
+    # Dynamically adjust UMAP parameters for very small datasets to avoid eigh/scipy crashes
+    try:
+        from umap import UMAP
+        n_neighbors = min(15, len(sentences) - 1)
+        n_components = min(5, len(sentences) - 2)
+        umap_model = UMAP(
+            n_neighbors=max(2, n_neighbors), 
+            n_components=max(1, n_components), 
+            min_dist=0.0, 
+            metric='cosine', 
+            random_state=42
+        )
+    except ImportError:
+        umap_model = None
+
+    # Load multilingual model
+    sentence_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
+    
+    # 1. Stopwords removal configuration for extraction
+    from sklearn.feature_extraction.text import CountVectorizer
+    malay_stopwords = list(get_malay_stopwords())
+    # Restrict to single words to prevent weird collapsed bi-grams
+    vectorizer_model = CountVectorizer(stop_words=malay_stopwords, ngram_range=(1, 1))
+
+    # 2. Representation model to tune the topic words
+    from bertopic.representation import KeyBERTInspired
+    representation_model = KeyBERTInspired()
+    
+    # Create BERTopic model
+    topic_model = BERTopic(
+        embedding_model=sentence_model, 
+        umap_model=umap_model,
+        vectorizer_model=vectorizer_model,
+        representation_model=representation_model,
+        min_topic_size=min_cluster,
+        language="multilingual",
+        calculate_probabilities=False
+    )
+
+    try:
+        topics, probs = topic_model.fit_transform(sentences)
+    except Exception as e:
+        print(f"[BERTopic Error] {e}")
+        return []
+
+    # Extract topics
+    extracted_topics = []
+    topic_info = topic_model.get_topic_info()
+    
+    # Ignore the outlier topic (-1)
+    important_topics = topic_info[topic_info['Topic'] != -1]
+    
+    for idx, row in important_topics.iterrows():
+        topic_id = row['Topic']
+        # get_topic(id) returns list of (word, probability)
+        top_words_probs = topic_model.get_topic(topic_id)
+        if top_words_probs:
+            words = [word for word, prob in top_words_probs][:num_words]
+            extracted_topics.append({
+                "topic_id": topic_id + 1,
+                "words": words
+            })
+
+    return extracted_topics
+
+def perform_topic_modeling(text, method="lda", num_topics=3, num_words=5):
+    """
+    Perform Topic Modeling on the provided text, dispatching based on method.
+    """
+    method = method.lower()
+    if method == "bertopic":
+        return perform_bertopic(text, num_words=num_words)
+    else:
+        return perform_lda(text, num_topics=num_topics, num_words=num_words)
+
 if __name__ == "__main__":
     sample = (
         "Hari ini kita akan berbincang mengenai bajet kewangan syarikat untuk tahun depan. "
         "Kita perlu pastikan perbelanjaan dikurangkan dan keuntungan dimaksimumkan. "
         "Selain itu, pengurusan sumber manusia juga harus diberi perhatian khusus dalam memastikan "
-        "produktiviti pekerja berada di tahap optimum."
+        "produktiviti pekerja berada di tahap optimum. Proses perancangan strategik ini sangat penting "
+        "untuk memastikan kelestarian syarikat pada masa akan datang. Saya harap semua ketua jabatan "
+        "dapat memberikan kerjasama sepenuhnya. Mesyuarat pada hari ini juga akan membincangkan "
+        "masalah kekurangan kakitangan di bahagian operasi. Kita perlu mencari jalan penyelesaian secepat mungkin."
     )
-    topics = perform_topic_modeling(sample)
-    print("Detected Topics:")
-    for t in topics:
+    
+    print("\n--- Testing LDA ---")
+    lda_topics = perform_topic_modeling(sample, method="lda")
+    for t in lda_topics:
+        print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")
+        
+    print("\n--- Testing BERTopic ---")
+    bertopic_topics = perform_topic_modeling(sample, method="bertopic")
+    for t in bertopic_topics:
         print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")

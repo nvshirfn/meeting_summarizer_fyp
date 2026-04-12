@@ -1,0 +1,28 @@
+MALAY TEXT SUMMARIZATION REPORT
+============================================================
+Input:              cleaned_text/news.txt
+Mode:               meeting
+Extractive Method:  TEXTRANK
+Abstractive Model:  ms-t5-base (beam)
+Postprocess:        True
+Generated:          2026-04-12 22:00:23
+============================================================
+
+--- DOCUMENT METADATA ---
+Sentiment Analysis: {'SENTIMENT': 'NEUTRAL', 'POSITIVE_SCORE': 5, 'NEGATIVE_SCORE': 5, 'POSITIVE_WORDS_FOUND': ['BAIK', 'MEMBANGUN', 'MEMBANTU', 'MENINGKAT', 'MENYOKONG'], 'NEGATIVE_WORDS_FOUND': ['BUKAN', 'BURUK', 'KONFLIK', 'TIDAK']}
+Identified Topics:
+  Topic 1: tenaga, tekanan, luaran, faktor, malaysia
+  Topic 2: china, negara, situasi, peratus, import
+  Topic 3: pasaran, rajiv, ekonomi, tenaga, asia
+
+--- EXTRACTIVE KEY POINTS (TEXTRANK) ---
+1. Malaysia dan China dilihat tampil sebagai ekonomi berdaya tahan di Asia dalam persekitaran ketidaktentuan pasaran tenaga global yang semakin meningkat akibat konflik berterusan di Asia Barat.
+2. Dalam wawancara dengan Stesen Media CNBC baru-baru ini, Ketua JP Morgan bagi Asia merangkap Ketua Bersama Strategi Ekuiti Pasaran Pesat Membangun Global Rajiv Batra berkata, selain China dan Malaysia, kebanyakan ekonomi di rantau ini dilihat lebih terdedah kepada kejutan tenaga.
+3. Beliau berkata kekuatan Malaysia terletak kepada profil eksport tenaga dan rangka kerja dasar yang berdisiplin, yang menyediakan penampan terhadap tekanan luaran.
+
+--- FINAL ABSTRACTIVE SUMMARY (MS-T5-BASE, BEAM) ---
+Ringkasan AI
+•	Malaysia dan China dilihat tampil sebagai ekonomi berdaya tahan di Asia dalam persekitaran ketidakpastian pasaran tenaga global yang semakin meningkat akibat konflik berterusan di Asia Barat
+•	Ketua JP Morgan bagi Asia merangkap Ketua Bersama Strategi Ekuiti Pasaran Pesat Membangun Global Rajiv Batra berkata, selain Malaysia, kebanyakan ekonomi di rantau ini dilihat lebih terdedah kepada kejutan tenaga daripada negara-negara lain di rantau itu
+•	Ia juga dilihat menunjukkan bahawa kekuatan Malaysia terletak pada profil eksport tenaga dan rangka kerja dasar yang berdisiplin, yang menyediakan penampan terhadap tekanan luaran
+•	Dalam wawancara dengan stesen media CNBC baru-baru ini, Rajiv Btra berkata: "Selain Malaysia, sebahagian besar ekonomi di wilayah itu dilihat lebih rentan terhadap kejutan tenaga"
