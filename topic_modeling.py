@@ -169,6 +169,47 @@ def perform_bertopic(text, num_words=5):
 
     return extracted_topics
 
+def perform_nmf(text, num_topics=3, num_words=5):
+    """
+    Perform Topic Modeling using Non-Negative Matrix Factorization (NMF).
+    """
+    if not text or not text.strip():
+        return []
+        
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.decomposition import NMF
+    
+    stopwords = list(get_malay_stopwords())
+    
+    sentences = [sent.strip() for sent in re.split(r'[.!?]+', text) if len(sent.strip()) > 5]
+    if not sentences:
+        return []
+        
+    # NMF cannot have more components than documents
+    num_topics = min(num_topics, len(sentences))
+        
+    vectorizer = TfidfVectorizer(stop_words=stopwords, lowercase=True)
+    try:
+        tfidf = vectorizer.fit_transform(sentences)
+    except ValueError:
+        return []
+        
+    nmf_model = NMF(n_components=num_topics, random_state=42, init='nndsvd')
+    nmf_model.fit(tfidf)
+    
+    feature_names = vectorizer.get_feature_names_out()
+    
+    extracted_topics = []
+    for topic_idx, topic in enumerate(nmf_model.components_):
+        top_features_ind = topic.argsort()[:-num_words - 1:-1]
+        top_words = [feature_names[i] for i in top_features_ind]
+        extracted_topics.append({
+            "topic_id": topic_idx + 1,
+            "words": top_words
+        })
+        
+    return extracted_topics
+
 def perform_topic_modeling(text, method="lda", num_topics=3, num_words=5):
     """
     Perform Topic Modeling on the provided text, dispatching based on method.
@@ -176,26 +217,73 @@ def perform_topic_modeling(text, method="lda", num_topics=3, num_words=5):
     method = method.lower()
     if method == "bertopic":
         return perform_bertopic(text, num_words=num_words)
+    elif method == "nmf":
+        return perform_nmf(text, num_topics=num_topics, num_words=num_words)
     else:
         return perform_lda(text, num_topics=num_topics, num_words=num_words)
 
 if __name__ == "__main__":
-    sample = (
-        "Hari ini kita akan berbincang mengenai bajet kewangan syarikat untuk tahun depan. "
-        "Kita perlu pastikan perbelanjaan dikurangkan dan keuntungan dimaksimumkan. "
-        "Selain itu, pengurusan sumber manusia juga harus diberi perhatian khusus dalam memastikan "
-        "produktiviti pekerja berada di tahap optimum. Proses perancangan strategik ini sangat penting "
-        "untuk memastikan kelestarian syarikat pada masa akan datang. Saya harap semua ketua jabatan "
-        "dapat memberikan kerjasama sepenuhnya. Mesyuarat pada hari ini juga akan membincangkan "
-        "masalah kekurangan kakitangan di bahagian operasi. Kita perlu mencari jalan penyelesaian secepat mungkin."
-    )
+    import argparse
+    import os
     
-    print("\n--- Testing LDA ---")
-    lda_topics = perform_topic_modeling(sample, method="lda")
-    for t in lda_topics:
-        print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")
+    parser = argparse.ArgumentParser(description="Run Topic Modeling on a text file.")
+    parser.add_argument("--input", type=str, help="Path to the input text file (e.g., cleaned_text/news.txt)")
+    parser.add_argument("--method", type=str, choices=["lda", "bertopic", "nmf", "both"], default="both", help="Topic modeling method")
+    parser.add_argument("--num_topics", type=int, default=3, help="Number of topics (LDA only)")
+    parser.add_argument("--num_words", type=int, default=5, help="Number of words per topic")
+    
+    args = parser.parse_args()
+    
+    if args.input:
+        if not os.path.exists(args.input):
+            print(f"Error: Could not find file {args.input}")
+            exit(1)
+            
+        with open(args.input, "r", encoding="utf-8") as f:
+            text = f.read()
+            
+        print(f"\nComparing Topic Models for: {os.path.basename(args.input)}")
         
-    print("\n--- Testing BERTopic ---")
-    bertopic_topics = perform_topic_modeling(sample, method="bertopic")
-    for t in bertopic_topics:
-        print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")
+        if args.method in ["lda", "both"]:
+            print(f"\n--- LDA Topics ---")
+            topics = perform_topic_modeling(text, method="lda", num_topics=args.num_topics, num_words=args.num_words)
+            for t in topics:
+                print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")
+                
+        if args.method in ["bertopic", "both"]:
+            print(f"\n--- BERTopic Topics ---")
+            topics = perform_topic_modeling(text, method="bertopic", num_topics=args.num_topics, num_words=args.num_words)
+            for t in topics:
+                print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")
+                
+        if args.method in ["nmf", "both"]:
+            print(f"\n--- NMF Topics ---")
+            topics = perform_topic_modeling(text, method="nmf", num_topics=args.num_topics, num_words=args.num_words)
+            for t in topics:
+                print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")
+            
+    else:
+        # Fallback test if no input file is provided
+        sample = (
+            "Hari ini kita akan berbincang mengenai bajet kewangan syarikat untuk tahun depan. "
+            "Kita perlu pastikan perbelanjaan dikurangkan dan keuntungan dimaksimumkan. "
+            "Selain itu, pengurusan sumber manusia juga harus diberi perhatian khusus dalam memastikan "
+            "produktiviti pekerja berada di tahap optimum. Proses perancangan strategik ini sangat penting "
+            "untuk memastikan kelestarian syarikat pada masa akan datang. Saya harap semua ketua jabatan "
+            "dapat memberikan kerjasama sepenuhnya. Mesyuarat pada hari ini juga akan membincangkan "
+            "masalah kekurangan kakitangan di bahagian operasi. Kita perlu mencari jalan penyelesaian secepat mungkin."
+        )
+        print("\n--- Testing LDA ---")
+        lda_topics = perform_topic_modeling(sample, method="lda")
+        for t in lda_topics:
+            print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")
+            
+        print("\n--- Testing BERTopic ---")
+        bertopic_topics = perform_topic_modeling(sample, method="bertopic")
+        for t in bertopic_topics:
+            print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")
+            
+        print("\n--- Testing NMF ---")
+        nmf_topics = perform_topic_modeling(sample, method="nmf")
+        for t in nmf_topics:
+            print(f"Topic {t['topic_id']}: {', '.join(t['words'])}")

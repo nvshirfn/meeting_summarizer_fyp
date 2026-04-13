@@ -80,6 +80,7 @@ SENTIMENT_MODELS = {
 TOPIC_MODELS = {
     "lda": "LDA (Latent Dirichlet Allocation)",
     "bertopic": "BERTopic (Transformer-based Clusters)",
+    "nmf": "NMF (Non-Negative Matrix Factorization)"
 }
 
 ABSTRACTIVE_MODELS = {
