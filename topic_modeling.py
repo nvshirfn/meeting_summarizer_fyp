@@ -1,6 +1,65 @@
 import re
 import gensim
 from gensim import corpora
+from collections import Counter
+
+# ── Stemmer Setup ───────────────────────────────────────────────
+_stemmer = None
+
+def get_stemmer():
+    """Load and cache the Sastrawi stemmer."""
+    global _stemmer
+    if _stemmer is not None:
+        return _stemmer
+    try:
+        from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
+        _stemmer = StemmerFactory().create_stemmer()
+        return _stemmer
+    except ImportError:
+        print("[Warning] PySastrawi not installed. Stemming disabled.")
+        return None
+
+def stem_words(words):
+    """
+    Stem a list of words and build a reverse mapping.
+    
+    Returns:
+        stemmed_words: list of stemmed tokens
+        stem_map: dict mapping each stem -> Counter of original word forms
+    """
+    stemmer = get_stemmer()
+    if stemmer is None:
+        return words, {w: Counter({w: 1}) for w in words}
+    
+    stemmed_words = []
+    stem_map = {}  # stem -> Counter({original_word: count})
+    
+    for word in words:
+        stem = stemmer.stem(word)
+        stemmed_words.append(stem)
+        
+        if stem not in stem_map:
+            stem_map[stem] = Counter()
+        stem_map[stem][word] += 1
+    
+    return stemmed_words, stem_map
+
+def resolve_stems(stem_keywords, stem_map):
+    """
+    Map stem keywords back to their most common original word form.
+    
+    Example: stem 'bincang' -> returns 'perbincangan' if that was
+             the most frequent original form in the text.
+    """
+    resolved = []
+    for stem in stem_keywords:
+        if stem in stem_map and stem_map[stem]:
+            # Pick the most common original form
+            most_common = stem_map[stem].most_common(1)[0][0]
+            resolved.append(most_common)
+        else:
+            resolved.append(stem)
+    return resolved
 
 def get_malay_stopwords():
     """
@@ -21,21 +80,30 @@ def get_malay_stopwords():
 
 def process_text_for_lda(text, stopwords):
     """
-    Split text into 'documents' (sentences) and tokenize for LDA.
+    Split text into 'documents' (sentences), tokenize, and stem for LDA.
+    Returns:
+        texts: list of list of stemmed tokens
+        global_stem_map: dict mapping stem -> Counter of original forms
     """
-    # Split text into sentences by common sentence delimiters
     sentences = re.split(r'[.!?]+', text)
     
     texts = []
+    global_stem_map = {}
+    
     for sent in sentences:
-        # keep alphanumeric
         words = re.findall(r'\b[a-zA-Z]+\b', sent.lower())
-        # remove stopwords and short words
         tokens = [w for w in words if w not in stopwords and len(w) > 2]
+        
         if tokens:
-            texts.append(tokens)
+            stemmed, local_map = stem_words(tokens)
+            texts.append(stemmed)
+            # Merge local map into global map
+            for stem, counter in local_map.items():
+                if stem not in global_stem_map:
+                    global_stem_map[stem] = Counter()
+                global_stem_map[stem] += counter
             
-    return texts
+    return texts, global_stem_map
 
 def perform_lda(text, num_topics=3, num_words=5):
     """
@@ -45,7 +113,7 @@ def perform_lda(text, num_topics=3, num_words=5):
         return []
         
     stopwords = get_malay_stopwords()
-    texts = process_text_for_lda(text, stopwords)
+    texts, stem_map = process_text_for_lda(text, stopwords)
     
     if not texts:
         return []
@@ -63,18 +131,19 @@ def perform_lda(text, num_topics=3, num_words=5):
         corpus=corpus,
         id2word=dictionary,
         num_topics=num_topics,
-        random_state=42, # For reproducibility
+        random_state=42,
         passes=10,
         iterations=50
     )
     
-    # Extract Topics
+    # Extract Topics and resolve stems back to original forms
     extracted_topics = []
     for topic_id, topic_term_prob in lda_model.show_topics(num_topics=num_topics, num_words=num_words, formatted=False):
-        topic_words = [word for word, prob in topic_term_prob]
+        stem_keywords = [word for word, prob in topic_term_prob]
+        resolved_words = resolve_stems(stem_keywords, stem_map)
         extracted_topics.append({
             "topic_id": topic_id + 1,
-            "words": topic_words
+            "words": resolved_words
         })
         
     return extracted_topics
@@ -100,6 +169,21 @@ def perform_bertopic(text, num_words=5):
         print("[BERTopic] Text is too short for clustering (requires at least 5 sentences).")
         return []
 
+    # Build stemmed versions of sentences for the vectorizer + reverse map
+    stopwords = get_malay_stopwords()
+    global_stem_map = {}
+    stemmed_sentences = []
+    
+    for sent in sentences:
+        words = re.findall(r'\b[a-zA-Z]+\b', sent.lower())
+        tokens = [w for w in words if w not in stopwords and len(w) > 2]
+        stemmed, local_map = stem_words(tokens)
+        stemmed_sentences.append(' '.join(stemmed))
+        for stem, counter in local_map.items():
+            if stem not in global_stem_map:
+                global_stem_map[stem] = Counter()
+            global_stem_map[stem] += counter
+
     # If transcript is extremely short (< 15 sentences), BERTopic might struggle to cluster.
     # Adjusting minimum cluster size for short documents:
     min_cluster = 2 if len(sentences) < 20 else 3
@@ -122,13 +206,14 @@ def perform_bertopic(text, num_words=5):
     # Load multilingual model
     sentence_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
     
-    # 1. Stopwords removal configuration for extraction
+    # Pre-compute embeddings from ORIGINAL (unstemmed) sentences for quality
+    embeddings = sentence_model.encode(sentences, show_progress_bar=False)
+    
+    # Vectorizer uses STEMMED sentences for better keyword grouping
     from sklearn.feature_extraction.text import CountVectorizer
-    malay_stopwords = list(get_malay_stopwords())
-    # Restrict to single words to prevent weird collapsed bi-grams
-    vectorizer_model = CountVectorizer(stop_words=malay_stopwords, ngram_range=(1, 1))
+    vectorizer_model = CountVectorizer(ngram_range=(1, 1))
 
-    # 2. Representation model to tune the topic words
+    # Representation model to tune the topic words
     from bertopic.representation import KeyBERTInspired
     representation_model = KeyBERTInspired()
     
@@ -144,12 +229,13 @@ def perform_bertopic(text, num_words=5):
     )
 
     try:
-        topics, probs = topic_model.fit_transform(sentences)
+        # Use stemmed_sentences for document representation but pre-computed embeddings for clustering
+        topics, probs = topic_model.fit_transform(stemmed_sentences, embeddings=embeddings)
     except Exception as e:
         print(f"[BERTopic Error] {e}")
         return []
 
-    # Extract topics
+    # Extract topics and resolve stems back to original forms
     extracted_topics = []
     topic_info = topic_model.get_topic_info()
     
@@ -158,13 +244,13 @@ def perform_bertopic(text, num_words=5):
     
     for idx, row in important_topics.iterrows():
         topic_id = row['Topic']
-        # get_topic(id) returns list of (word, probability)
         top_words_probs = topic_model.get_topic(topic_id)
         if top_words_probs:
-            words = [word for word, prob in top_words_probs][:num_words]
+            stem_keywords = [word for word, prob in top_words_probs][:num_words]
+            resolved_words = resolve_stems(stem_keywords, global_stem_map)
             extracted_topics.append({
                 "topic_id": topic_id + 1,
-                "words": words
+                "words": resolved_words
             })
 
     return extracted_topics
@@ -184,13 +270,30 @@ def perform_nmf(text, num_topics=3, num_words=5):
     sentences = [sent.strip() for sent in re.split(r'[.!?]+', text) if len(sent.strip()) > 5]
     if not sentences:
         return []
+    
+    # Stem each sentence and build global reverse map
+    global_stem_map = {}
+    stemmed_sentences = []
+    
+    for sent in sentences:
+        words = re.findall(r'\b[a-zA-Z]+\b', sent.lower())
+        tokens = [w for w in words if w not in stopwords and len(w) > 2]
+        stemmed, local_map = stem_words(tokens)
+        stemmed_sentences.append(' '.join(stemmed))
+        for stem, counter in local_map.items():
+            if stem not in global_stem_map:
+                global_stem_map[stem] = Counter()
+            global_stem_map[stem] += counter
+    
+    if not any(s.strip() for s in stemmed_sentences):
+        return []
         
     # NMF cannot have more components than documents
-    num_topics = min(num_topics, len(sentences))
+    num_topics = min(num_topics, len(stemmed_sentences))
         
-    vectorizer = TfidfVectorizer(stop_words=stopwords, lowercase=True)
+    vectorizer = TfidfVectorizer(lowercase=True)
     try:
-        tfidf = vectorizer.fit_transform(sentences)
+        tfidf = vectorizer.fit_transform(stemmed_sentences)
     except ValueError:
         return []
         
@@ -202,10 +305,11 @@ def perform_nmf(text, num_topics=3, num_words=5):
     extracted_topics = []
     for topic_idx, topic in enumerate(nmf_model.components_):
         top_features_ind = topic.argsort()[:-num_words - 1:-1]
-        top_words = [feature_names[i] for i in top_features_ind]
+        stem_keywords = [feature_names[i] for i in top_features_ind]
+        resolved_words = resolve_stems(stem_keywords, global_stem_map)
         extracted_topics.append({
             "topic_id": topic_idx + 1,
-            "words": top_words
+            "words": resolved_words
         })
         
     return extracted_topics
