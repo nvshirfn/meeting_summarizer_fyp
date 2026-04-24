@@ -61,6 +61,56 @@ def resolve_stems(stem_keywords, stem_map):
             resolved.append(stem)
     return resolved
 
+def is_noun_or_verb(word):
+    """
+    Rule-based check if a Malay word is likely a Noun or Verb
+    based on common morphological patterns.
+    """
+    w = word.lower()
+    
+    # Common Malay NOUN patterns (prefix + suffix combinations)
+    noun_patterns = [
+        r'^pe\w+an$',       # pe-...-an  (e.g., perbelanjaan, pengurusan, pendidikan)
+        r'^per\w+an$',      # per-...-an (e.g., perbincangan, pertumbuhan)
+        r'^ke\w+an$',       # ke-...-an  (e.g., keuntungan, kewangan, kesihatan)
+        r'^pem\w+an$',      # pem-...-an (e.g., pembangunan, pembelian)
+        r'^pen\w+an$',      # pen-...-an (e.g., pendapatan, pencapaian)
+        r'^peng\w+an$',     # peng-...-an (e.g., pengurangan, penggunaan)
+    ]
+    
+    # Common Malay VERB patterns
+    verb_patterns = [
+        r'^ber\w+',         # ber- (e.g., berbincang, bermesyuarat)
+        r'^me[mny]\w+',     # mem-, men-, meny- (e.g., membincangkan, menyediakan)
+        r'^di\w+kan$',      # di-...-kan (e.g., dikurangkan, dimaksimumkan)
+        r'^di\w+i$',        # di-...-i (e.g., diperbaiki, diambili)
+        r'^ter\w+',         # ter- (e.g., terbesar, terpengaruh)
+    ]
+    
+    for pattern in noun_patterns + verb_patterns:
+        if re.match(pattern, w):
+            return True
+    
+    # Also keep words that are at least 4 chars and don't match
+    # common adjective/adverb suffixes
+    adj_adv_patterns = [
+        r'^se\w+nya$',      # se-...-nya (e.g., secepat, sepenuhnya)
+        r'^ter\w+sekali$',  # superlative
+    ]
+    for pattern in adj_adv_patterns:
+        if re.match(pattern, w):
+            return False
+    
+    # Default: keep the word (we don't want to over-filter)
+    return True
+
+def filter_content_words(words):
+    """
+    Filter a list of words to keep only likely nouns and verbs.
+    Short words (<=3 chars) and words matching adjective/adverb patterns are removed.
+    """
+    return [w for w in words if len(w) > 3 and is_noun_or_verb(w)]
+
 def get_malay_stopwords():
     """
     Load Malay stopwords from Malaya if available, else use a hardcoded list.
@@ -93,6 +143,7 @@ def process_text_for_lda(text, stopwords):
     for sent in sentences:
         words = re.findall(r'\b[a-zA-Z]+\b', sent.lower())
         tokens = [w for w in words if w not in stopwords and len(w) > 2]
+        tokens = filter_content_words(tokens)
         
         if tokens:
             stemmed, local_map = stem_words(tokens)
