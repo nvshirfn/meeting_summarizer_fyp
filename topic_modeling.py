@@ -128,6 +128,43 @@ def get_malay_stopwords():
             "dalam", "bagi", "ia", "adalah", "lagi", "lebih", "nya"
         }
 
+def group_mwe(text):
+    """
+    Replace spaces in common Malay Multi-Word Expressions (MWE) with underscores
+    so they are treated as single tokens by topic modeling algorithms.
+    """
+    mwes = [
+        r'\bsumber manusia\b', 
+        r'\bkertas kerja\b', 
+        r'\btunjuk ajar\b',
+        r'\btata tertib\b',
+        r'\bambil maklum\b',
+        r'\bturut serta\b',
+        r'\btanggung jawab\b',
+        r'\blatar belakang\b',
+        r'\btempat kerja\b',
+        r'\breka bentuk\b',
+        r'\bsusah payah\b',
+        r'\bmaklum balas\b',
+        r'\bpengerusi majlis\b',
+        r'\btetamu kehormat\b',
+        r'\buang ringgit\b',
+        r'\balam sekitar\b',
+        r'\bpilihan raya\b',
+        r'\bjabatan kewangan\b',
+        r'\bbahagian operasi\b',
+        r'\bpengarah urusan\b',
+        r'\bketua pegawai\b',
+        r'\bpegawai eksekutif\b',
+        r'\bperancangan strategik\b',
+        r'\bjalan penyelesaian\b'
+    ]
+    
+    for mwe in mwes:
+        # e.g., 'sumber manusia' -> 'sumber_manusia'
+        text = re.sub(mwe, lambda m: m.group(0).replace(' ', '_'), text, flags=re.IGNORECASE)
+    return text
+
 def process_text_for_lda(text, stopwords):
     """
     Split text into 'documents' (sentences), tokenize, and stem for LDA.
@@ -135,13 +172,14 @@ def process_text_for_lda(text, stopwords):
         texts: list of list of stemmed tokens
         global_stem_map: dict mapping stem -> Counter of original forms
     """
+    text = group_mwe(text)
     sentences = re.split(r'[.!?]+', text)
     
     texts = []
     global_stem_map = {}
     
     for sent in sentences:
-        words = re.findall(r'\b[a-zA-Z]+\b', sent.lower())
+        words = re.findall(r'\b[a-zA-Z_]+\b', sent.lower())
         tokens = [w for w in words if w not in stopwords and len(w) > 2]
         tokens = filter_content_words(tokens)
         
@@ -214,6 +252,7 @@ def perform_bertopic(text, num_words=5):
         print("[Error] bertopic or sentence_transformers not installed. Fallback to []")
         return []
 
+    text = group_mwe(text)
     # Split text into sentences
     sentences = [sent.strip() for sent in re.split(r'[.!?]+', text) if len(sent.strip()) > 5]
     if len(sentences) < 5:
@@ -226,8 +265,9 @@ def perform_bertopic(text, num_words=5):
     stemmed_sentences = []
     
     for sent in sentences:
-        words = re.findall(r'\b[a-zA-Z]+\b', sent.lower())
+        words = re.findall(r'\b[a-zA-Z_]+\b', sent.lower())
         tokens = [w for w in words if w not in stopwords and len(w) > 2]
+        tokens = filter_content_words(tokens)
         stemmed, local_map = stem_words(tokens)
         stemmed_sentences.append(' '.join(stemmed))
         for stem, counter in local_map.items():
@@ -318,6 +358,7 @@ def perform_nmf(text, num_topics=3, num_words=5):
     
     stopwords = list(get_malay_stopwords())
     
+    text = group_mwe(text)
     sentences = [sent.strip() for sent in re.split(r'[.!?]+', text) if len(sent.strip()) > 5]
     if not sentences:
         return []
@@ -327,8 +368,9 @@ def perform_nmf(text, num_topics=3, num_words=5):
     stemmed_sentences = []
     
     for sent in sentences:
-        words = re.findall(r'\b[a-zA-Z]+\b', sent.lower())
+        words = re.findall(r'\b[a-zA-Z_]+\b', sent.lower())
         tokens = [w for w in words if w not in stopwords and len(w) > 2]
+        tokens = filter_content_words(tokens)
         stemmed, local_map = stem_words(tokens)
         stemmed_sentences.append(' '.join(stemmed))
         for stem, counter in local_map.items():
