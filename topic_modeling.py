@@ -82,7 +82,7 @@ def is_noun_or_verb(word):
     verb_patterns = [
         r'^ber\w+',         # ber- (e.g., berbincang, bermesyuarat)
         r'^me[mny]\w+',     # mem-, men-, meny- (e.g., membincangkan, menyediakan)
-        r'^di\w+kan$',      # di-...-kan (e.g., dikurangkan, dimaksimumkan)
+        r'^di\w+kan$',      # di-...-kan (e.g., dikuranagkan, dimaksimumkan)
         r'^di\w+i$',        # di-...-i (e.g., diperbaiki, diambili)
         r'^ter\w+',         # ter- (e.g., terbesar, terpengaruh)
     ]

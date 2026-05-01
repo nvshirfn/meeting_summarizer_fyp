@@ -74,6 +74,7 @@ SUMMARIZATION_MODELS = {
 }
 
 SENTIMENT_MODELS = {
+    "bert": "Malaya BERT (Transformer-Based)",
     "lexicon": "Lexicon-Based Polarity Analysis",
 }
 
@@ -140,8 +141,8 @@ def process():
     topics = perform_topic_modeling(cleaned_transcript, method=topic_key)
 
     # ── STEP 4  Sentiment ───────────────────────────────────────
-    print("[Web] Step 4/5 — Sentiment analysis …")
-    sentiment = analyze_sentiment(cleaned_transcript)
+    print(f"[Web] Step 4/5 — Sentiment analysis ({sentiment_key}) …")
+    sentiment = analyze_sentiment(cleaned_transcript, method=sentiment_key)
 
     # ── STEP 5  Extractive → Abstractive ────────────────────────
     print(f"[Web] Step 5/5 — Summarization ({ext_method} → {abs_model_key}) …")

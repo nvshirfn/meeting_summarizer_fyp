@@ -134,13 +134,34 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><circle cx="12" cy="12" r="10"/><line x1="8" y1="15" x2="16" y2="15"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
             {% endif %}
             {{ sent | capitalize }}
+            {% if r.sentiment.confidence is defined %}
+            <span style="font-size:.78rem; opacity:.75; margin-left:.4rem;">({{ (r.sentiment.confidence * 100) | round(1) }}% confidence)</span>
+            {% endif %}
           </div>
 
           {% if r.sentiment is mapping %}
           <div class="sentiment-detail">
-            <div>Positive words: <span>{{ r.sentiment.positive_score }}</span></div>
-            <div>Negative words: <span>{{ r.sentiment.negative_score }}</span></div>
+            <div>Positive: <span>{{ (r.sentiment.positive_score * 100) | round(1) }}%</span></div>
+            <div>Negative: <span>{{ (r.sentiment.negative_score * 100) | round(1) }}%</span></div>
+            <div>Neutral: <span>{{ (r.sentiment.neutral_score * 100) | round(1) }}%</span></div>
           </div>
+
+          {% if r.sentiment.sentence_results %}
+          <details style="margin-top:.8rem;">
+            <summary style="cursor:pointer; font-size:.82rem; color:var(--text-muted); user-select:none;">
+              Per-sentence breakdown ({{ r.sentiment.sentence_results | length }} sentences)
+            </summary>
+            <div style="margin-top:.5rem; max-height:200px; overflow-y:auto;">
+              {% for sr in r.sentiment.sentence_results %}
+              <div style="font-size:.8rem; padding:.3rem 0; border-bottom:1px solid rgba(255,255,255,.06);">
+                <span class="sentiment-badge sentiment-badge--{{ sr.sentiment }}" style="font-size:.7rem; padding:.15rem .5rem; display:inline;">{{ sr.sentiment | capitalize }}</span>
+                <span style="margin-left:.4rem; color:var(--text-muted);">{{ sr.text[:80] }}{% if sr.text|length > 80 %}…{% endif %}</span>
+              </div>
+              {% endfor %}
+            </div>
+          </details>
+          {% endif %}
+
           {% endif %}
         </div>
       </div>
