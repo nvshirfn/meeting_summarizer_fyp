@@ -4,11 +4,17 @@ Flask app providing upload + results pages.
 """
 
 import os
+os.environ['TOKENIZERS_PARALLELISM'] = 'false'
+
 import time
 import torch
 import warnings
 from datetime import datetime
 from flask import Flask, render_template, request, redirect, url_for, session
+
+# Pre-import heavily threaded ML libraries to avoid importlib KeyErrors in Flask worker threads
+import transformers
+import tokenizers
 
 # Suppress noisy warnings
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
@@ -106,8 +112,8 @@ def upload_page():
 @app.route("/process", methods=["POST"])
 def process():
     # ── Collect form data ───────────────────────────────────────
-    audio = request.files.get("audio_file")
-    if not audio or audio.filename == "":
+    uploaded_file = request.files.get("upload_file")
+    if not uploaded_file or uploaded_file.filename == "":
         return redirect(url_for("upload_page"))
 
     ext_method     = request.form.get("summarization_model", "textrank")
@@ -115,22 +121,27 @@ def process():
     topic_key      = request.form.get("topic_model", "lda")
     abs_model_key  = request.form.get("abstractive_model", DEFAULT_MODEL_KEY)
 
-    # Save audio file
-    filename = audio.filename
+    # Save uploaded file
+    filename = uploaded_file.filename
     save_path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-    audio.save(save_path)
+    uploaded_file.save(save_path)
 
     start_time = time.time()
 
-    # ── STEP 1  Speech-to-Text ──────────────────────────────────
-    print("[Web] Step 1/5 — Transcribing audio …")
-    stt = get_stt_pipeline()
-    stt_result = stt(
-        save_path,
-        generate_kwargs={"language": "ms", "task": "transcribe"},
-        return_timestamps=True,
-    )
-    raw_transcript = stt_result["text"]
+    # ── STEP 1  Speech-to-Text or Read Text ─────────────────────
+    if filename.lower().endswith(".txt"):
+        print("[Web] Step 1/5 — Reading text file (skipping STT) …")
+        with open(save_path, "r", encoding="utf-8", errors="ignore") as f:
+            raw_transcript = f.read()
+    else:
+        print("[Web] Step 1/5 — Transcribing audio …")
+        stt = get_stt_pipeline()
+        stt_result = stt(
+            save_path,
+            generate_kwargs={"language": "ms", "task": "transcribe"},
+            return_timestamps=True,
+        )
+        raw_transcript = stt_result["text"]
 
     # ── STEP 2  Preprocessing ───────────────────────────────────
     print("[Web] Step 2/5 — Preprocessing …")

@@ -29,9 +29,9 @@
   <main class="container">
 
     <header class="page-header">
-      <h1 class="page-header__title">Upload Meeting Audio</h1>
+      <h1 class="page-header__title">Upload Meeting File</h1>
       <p class="page-header__desc">
-        Upload a Malay meeting recording and let the system generate a transcript,
+        Upload a Malay meeting audio recording or a text transcript (.txt) and let the system generate a transcript,
         summary, sentiment analysis, and topic detection automatically.
       </p>
     </header>
@@ -47,11 +47,11 @@
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          Audio File
+          Audio or Text File
         </div>
         <div class="card__body">
           <label class="upload-zone" id="dropZone">
-            <input class="upload-zone__input" type="file" name="audio_file" id="audioInput" accept=".wav,.mp3"
+            <input class="upload-zone__input" type="file" name="upload_file" id="audioInput" accept=".wav,.mp3,.txt"
               required />
             <svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
               stroke-linecap="round" stroke-linejoin="round">
@@ -59,8 +59,8 @@
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            <div class="upload-zone__title">Drag & drop your audio file here</div>
-            <div class="upload-zone__subtitle">Supports <strong>.wav</strong> and <strong>.mp3</strong> formats</div>
+            <div class="upload-zone__title">Drag & drop your audio or text file here</div>
+            <div class="upload-zone__subtitle">Supports <strong>.wav</strong>, <strong>.mp3</strong>, and <strong>.txt</strong> formats</div>
             <div class="upload-zone__filename" id="fileName"></div>
           </label>
         </div>
@@ -148,8 +148,8 @@
   <!-- ── Loading Overlay ──────────────────────────────────────── -->
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
-    <div class="loading-overlay__text">Processing your meeting audio …</div>
-    <div class="loading-overlay__sub">This may take several minutes depending on the audio length and models selected.
+    <div class="loading-overlay__text">Processing your file …</div>
+    <div class="loading-overlay__sub">This may take several minutes depending on the file length and models selected.
     </div>
   </div>
 
