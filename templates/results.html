@@ -140,10 +140,27 @@
           </div>
 
           {% if r.sentiment is mapping %}
-          <div class="sentiment-detail">
-            <div>Positive: <span>{{ (r.sentiment.positive_score * 100) | round(1) }}%</span></div>
-            <div>Negative: <span>{{ (r.sentiment.negative_score * 100) | round(1) }}%</span></div>
-            <div>Neutral: <span>{{ (r.sentiment.neutral_score * 100) | round(1) }}%</span></div>
+          <div class="sentiment-detail" style="flex-direction: column; gap: .4rem;">
+            <div style="display: flex; gap: 1.2rem;">
+              {% if r.sentiment.confidence is defined %}
+              <div>Positive: <span>{{ (r.sentiment.positive_score * 100) | round(1) }}%</span></div>
+              <div>Negative: <span>{{ (r.sentiment.negative_score * 100) | round(1) }}%</span></div>
+              <div>Neutral: <span>{{ (r.sentiment.neutral_score * 100) | round(1) }}%</span></div>
+              {% else %}
+              <div>Positive: <span>{{ r.sentiment.positive_score }} words</span></div>
+              <div>Negative: <span>{{ r.sentiment.negative_score }} words</span></div>
+              {% endif %}
+            </div>
+            {% if r.sentiment.confidence is undefined %}
+              <div style="font-size: .78rem; opacity: .8;">
+                {% if r.sentiment.positive_words_found %}
+                  <div style="margin-bottom: .2rem;"><strong>Pos:</strong> {{ r.sentiment.positive_words_found | join(', ') }}</div>
+                {% endif %}
+                {% if r.sentiment.negative_words_found %}
+                  <div><strong>Neg:</strong> {{ r.sentiment.negative_words_found | join(', ') }}</div>
+                {% endif %}
+              </div>
+            {% endif %}
           </div>
 
           {% if r.sentiment.sentence_results %}
