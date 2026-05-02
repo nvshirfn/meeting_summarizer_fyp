@@ -223,6 +223,25 @@ body {
   gap: 1.2rem;
 }
 
+.field-group {
+  grid-column: 1 / -1;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 1.2rem;
+  background: var(--surface-alt);
+}
+
+.field-group__title {
+  font-weight: 600;
+  font-size: .85rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: .5rem;
+}
+
 .field { display: flex; flex-direction: column; gap: .35rem; }
 
 .field__label {

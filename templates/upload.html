@@ -64,24 +64,30 @@
       <div class="card__body">
         <div class="form-grid">
 
-          <!-- Extractive / Summarization -->
-          <div class="field">
-            <label class="field__label" for="summarization_model">Extractive Method</label>
-            <select class="field__select" name="summarization_model" id="summarization_model">
-              {% for key, label in summarization_models.items() %}
-              <option value="{{ key }}">{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
+          <!-- Summarization Group -->
+          <div class="field-group">
+            <div class="field-group__title">Summarization</div>
+            <div class="form-grid">
+              <!-- Extractive / Summarization -->
+              <div class="field">
+                <label class="field__label" for="summarization_model">Extractive Method</label>
+                <select class="field__select" name="summarization_model" id="summarization_model">
+                  {% for key, label in summarization_models.items() %}
+                  <option value="{{ key }}">{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
 
-          <!-- Abstractive Model -->
-          <div class="field">
-            <label class="field__label" for="abstractive_model">Abstractive Model</label>
-            <select class="field__select" name="abstractive_model" id="abstractive_model">
-              {% for key, label in abstractive_models.items() %}
-              <option value="{{ key }}" {% if key == default_abs %}selected{% endif %}>{{ label }}</option>
-              {% endfor %}
-            </select>
+              <!-- Abstractive Model -->
+              <div class="field">
+                <label class="field__label" for="abstractive_model">Abstractive Model</label>
+                <select class="field__select" name="abstractive_model" id="abstractive_model">
+                  {% for key, label in abstractive_models.items() %}
+                  <option value="{{ key }}" {% if key == default_abs %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
           </div>
 
           <!-- Sentiment -->
