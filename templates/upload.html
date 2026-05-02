@@ -1,162 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Upload — Malay Meeting Summarizer</title>
-  <meta name="description" content="Upload a Malay meeting audio file for automatic transcription, summarization, sentiment analysis, and topic detection." />
+  <meta name="description"
+    content="Upload a Malay meeting audio file for automatic transcription, summarization, sentiment analysis, and topic detection." />
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
 </head>
+
 <body>
 
-<!-- ── Navbar ──────────────────────────────────────────────── -->
-<nav class="navbar">
-  <a href="/" class="navbar__brand">
-    <!-- waveform icon -->
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M2 12h2l3-9 4 18 4-14 3 7h4"/>
-    </svg>
-    MalaySummarizer
-  </a>
-  <span class="navbar__subtitle">Meeting Summarization · Sentiment · Topics</span>
-</nav>
+  <!-- ── Navbar ──────────────────────────────────────────────── -->
+  <nav class="navbar">
+    <a href="/" class="navbar__brand">
+      <!-- waveform icon -->
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M2 12h2l3-9 4 18 4-14 3 7h4" />
+      </svg>
+      MalaySummarizer
+    </a>
+    <span class="navbar__subtitle">Meeting Summarization · Sentiment · Topics</span>
+  </nav>
 
-<!-- ── Main Content ───────────────────────────────────────── -->
-<main class="container">
+  <!-- ── Main Content ───────────────────────────────────────── -->
+  <main class="container">
 
-  <header class="page-header">
-    <h1 class="page-header__title">Upload Meeting Audio</h1>
-    <p class="page-header__desc">
-      Upload a Malay meeting recording and let the system generate a transcript,
-      summary, sentiment analysis, and topic detection automatically.
-    </p>
-  </header>
+    <header class="page-header">
+      <h1 class="page-header__title">Upload Meeting Audio</h1>
+      <p class="page-header__desc">
+        Upload a Malay meeting recording and let the system generate a transcript,
+        summary, sentiment analysis, and topic detection automatically.
+      </p>
+    </header>
 
-  <form id="uploadForm" method="POST" action="/process" enctype="multipart/form-data">
+    <form id="uploadForm" method="POST" action="/process" enctype="multipart/form-data">
 
-    <!-- ── Upload Zone ──────────────────────────────────── -->
-    <div class="card">
-      <div class="card__header">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Audio File
-      </div>
-      <div class="card__body">
-        <label class="upload-zone" id="dropZone">
-          <input class="upload-zone__input" type="file" name="audio_file" id="audioInput" accept=".wav,.mp3" required />
-          <svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="17 8 12 3 7 8"/>
-            <line x1="12" y1="3" x2="12" y2="15"/>
+      <!-- ── Upload Zone ──────────────────────────────────── -->
+      <div class="card">
+        <div class="card__header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          <div class="upload-zone__title">Drag & drop your audio file here</div>
-          <div class="upload-zone__subtitle">Supports <strong>.wav</strong> and <strong>.mp3</strong> formats</div>
-          <div class="upload-zone__filename" id="fileName"></div>
-        </label>
-      </div>
-    </div>
-
-    <!-- ── Model Selection ──────────────────────────────── -->
-    <div class="card mt-2">
-      <div class="card__header">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Model Configuration
-      </div>
-      <div class="card__body">
-        <div class="form-grid">
-
-          <!-- Summarization Group -->
-          <div class="field-group">
-            <div class="field-group__title">Summarization</div>
-            <div class="form-grid">
-              <!-- Extractive / Summarization -->
-              <div class="field">
-                <label class="field__label" for="summarization_model">Extractive Method</label>
-                <select class="field__select" name="summarization_model" id="summarization_model">
-                  {% for key, label in summarization_models.items() %}
-                  <option value="{{ key }}">{{ label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-
-              <!-- Abstractive Model -->
-              <div class="field">
-                <label class="field__label" for="abstractive_model">Abstractive Model</label>
-                <select class="field__select" name="abstractive_model" id="abstractive_model">
-                  {% for key, label in abstractive_models.items() %}
-                  <option value="{{ key }}" {% if key == default_abs %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <!-- Sentiment -->
-          <div class="field">
-            <label class="field__label" for="sentiment_model">Sentiment Model</label>
-            <select class="field__select" name="sentiment_model" id="sentiment_model">
-              {% for key, label in sentiment_models.items() %}
-              <option value="{{ key }}">{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <!-- Topic -->
-          <div class="field">
-            <label class="field__label" for="topic_model">Topic Detection Model</label>
-            <select class="field__select" name="topic_model" id="topic_model">
-              {% for key, label in topic_models.items() %}
-              <option value="{{ key }}">{{ label }}</option>
-              {% endfor %}
-            </select>
-          </div>
-
+          Audio File
+        </div>
+        <div class="card__body">
+          <label class="upload-zone" id="dropZone">
+            <input class="upload-zone__input" type="file" name="audio_file" id="audioInput" accept=".wav,.mp3"
+              required />
+            <svg class="upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            <div class="upload-zone__title">Drag & drop your audio file here</div>
+            <div class="upload-zone__subtitle">Supports <strong>.wav</strong> and <strong>.mp3</strong> formats</div>
+            <div class="upload-zone__filename" id="fileName"></div>
+          </label>
         </div>
       </div>
+
+      <!-- ── Model Selection ──────────────────────────────── -->
+      <div class="card mt-2">
+        <div class="card__header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+          Model Configuration
+        </div>
+        <div class="card__body">
+          <div class="form-grid">
+
+            <!-- Summarization Group -->
+            <div class="field-group">
+              <div class="field-group__title">Summarization</div>
+              <div class="form-grid">
+                <!-- Extractive / Summarization -->
+                <div class="field">
+                  <label class="field__label" for="summarization_model">Extractive Model</label>
+                  <select class="field__select" name="summarization_model" id="summarization_model">
+                    {% for key, label in summarization_models.items() %}
+                    <option value="{{ key }}">{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+
+                <!-- Abstractive Model -->
+                <div class="field">
+                  <label class="field__label" for="abstractive_model">Abstractive Model</label>
+                  <select class="field__select" name="abstractive_model" id="abstractive_model">
+                    {% for key, label in abstractive_models.items() %}
+                    <option value="{{ key }}" {% if key==default_abs %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sentiment -->
+            <div class="field">
+              <label class="field__label" for="sentiment_model">Sentiment Model</label>
+              <select class="field__select" name="sentiment_model" id="sentiment_model">
+                {% for key, label in sentiment_models.items() %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+            <!-- Topic -->
+            <div class="field">
+              <label class="field__label" for="topic_model">Topic Detection Model</label>
+              <select class="field__select" name="topic_model" id="topic_model">
+                {% for key, label in topic_models.items() %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Submit ────────────────────────────────────────── -->
+      <div class="btn__center">
+        <button type="submit" class="btn btn--primary btn--lg" id="submitBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polygon points="5 3 19 12 5 21 5 3" />
+          </svg>
+          Start Processing
+        </button>
+      </div>
+
+    </form>
+
+  </main>
+
+  <!-- ── Loading Overlay ──────────────────────────────────────── -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div class="loading-overlay__text">Processing your meeting audio …</div>
+    <div class="loading-overlay__sub">This may take several minutes depending on the audio length and models selected.
     </div>
+  </div>
 
-    <!-- ── Submit ────────────────────────────────────────── -->
-    <div class="btn__center">
-      <button type="submit" class="btn btn--primary btn--lg" id="submitBtn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-        Start Processing
-      </button>
-    </div>
+  <!-- ── Scripts ───────────────────────────────────────────────── -->
+  <script>
+    // File input feedback
+    const audioInput = document.getElementById('audioInput');
+    const fileName = document.getElementById('fileName');
+    const dropZone = document.getElementById('dropZone');
 
-  </form>
+    audioInput.addEventListener('change', () => {
+      if (audioInput.files.length) {
+        fileName.textContent = audioInput.files[0].name;
+        fileName.classList.add('show');
+      }
+    });
 
-</main>
+    // Drag-and-drop visual
+    ['dragenter', 'dragover'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.add('dragover')));
+    ['dragleave', 'drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.remove('dragover')));
 
-<!-- ── Loading Overlay ──────────────────────────────────────── -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-  <div class="loading-overlay__text">Processing your meeting audio …</div>
-  <div class="loading-overlay__sub">This may take several minutes depending on the audio length and models selected.</div>
-</div>
-
-<!-- ── Scripts ───────────────────────────────────────────────── -->
-<script>
-  // File input feedback
-  const audioInput = document.getElementById('audioInput');
-  const fileName   = document.getElementById('fileName');
-  const dropZone   = document.getElementById('dropZone');
-
-  audioInput.addEventListener('change', () => {
-    if (audioInput.files.length) {
-      fileName.textContent = audioInput.files[0].name;
-      fileName.classList.add('show');
-    }
-  });
-
-  // Drag-and-drop visual
-  ['dragenter','dragover'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.add('dragover')));
-  ['dragleave','drop'].forEach(e => dropZone.addEventListener(e, () => dropZone.classList.remove('dragover')));
-
-  // Show loading overlay on form submit
-  document.getElementById('uploadForm').addEventListener('submit', (e) => {
-    if (!audioInput.files.length) return;
-    document.getElementById('loadingOverlay').classList.add('active');
-  });
-</script>
+    // Show loading overlay on form submit
+    document.getElementById('uploadForm').addEventListener('submit', (e) => {
+      if (!audioInput.files.length) return;
+      document.getElementById('loadingOverlay').classList.add('active');
+    });
+  </script>
 
 </body>
+
 </html>
