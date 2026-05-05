@@ -141,16 +141,42 @@
 
           {% if r.sentiment is mapping %}
           <div class="sentiment-detail" style="flex-direction: column; gap: .4rem;">
+            {% if r.sentiment.confidence is defined %}
+            {% set positive_pct = (r.sentiment.positive_score * 100) | round(1) %}
+            {% set negative_pct = (r.sentiment.negative_score * 100) | round(1) %}
+            {% set neutral_pct = (r.sentiment.neutral_score * 100) | round(1) %}
+            {% set negative_start = positive_pct %}
+            {% set neutral_start = positive_pct + negative_pct %}
+            <div class="sentiment-chart-wrap">
+              <div
+                class="sentiment-pie"
+                role="img"
+                aria-label="Sentiment distribution: {{ positive_pct }}% positive, {{ negative_pct }}% negative, {{ neutral_pct }}% neutral"
+                style="background: conic-gradient(var(--green) 0 {{ positive_pct }}%, var(--red) {{ negative_start }}% {{ neutral_start }}%, var(--amber) {{ neutral_start }}% 100%);"
+              >
+                <span>{{ sent | capitalize }}</span>
+              </div>
+              <div class="sentiment-legend">
+                <div class="sentiment-legend__item">
+                  <span class="sentiment-legend__swatch sentiment-legend__swatch--positive"></span>
+                  Positive <strong>{{ positive_pct }}%</strong>
+                </div>
+                <div class="sentiment-legend__item">
+                  <span class="sentiment-legend__swatch sentiment-legend__swatch--negative"></span>
+                  Negative <strong>{{ negative_pct }}%</strong>
+                </div>
+                <div class="sentiment-legend__item">
+                  <span class="sentiment-legend__swatch sentiment-legend__swatch--neutral"></span>
+                  Neutral <strong>{{ neutral_pct }}%</strong>
+                </div>
+              </div>
+            </div>
+            {% else %}
             <div style="display: flex; gap: 1.2rem;">
-              {% if r.sentiment.confidence is defined %}
-              <div>Positive: <span>{{ (r.sentiment.positive_score * 100) | round(1) }}%</span></div>
-              <div>Negative: <span>{{ (r.sentiment.negative_score * 100) | round(1) }}%</span></div>
-              <div>Neutral: <span>{{ (r.sentiment.neutral_score * 100) | round(1) }}%</span></div>
-              {% else %}
               <div>Positive: <span>{{ r.sentiment.positive_score }} words</span></div>
               <div>Negative: <span>{{ r.sentiment.negative_score }} words</span></div>
-              {% endif %}
             </div>
+            {% endif %}
             {% if r.sentiment.confidence is undefined %}
               <div style="font-size: .78rem; opacity: .8;">
                 {% if r.sentiment.positive_words_found %}
