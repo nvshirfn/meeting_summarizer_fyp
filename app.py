@@ -81,6 +81,7 @@ SUMMARIZATION_MODELS = {
 
 SENTIMENT_MODELS = {
     "bert": "Malaya BERT (Transformer-Based)",
+    "multinomial_nb": "Multinomial Naive Bayes (ML-Based)",
     "lexicon": "Lexicon-Based Polarity Analysis",
 }
 
