@@ -11,7 +11,7 @@ import os
 import argparse
 from datetime import datetime
 
-from preprocess import preprocess_malay_transcript
+from preprocess import NORMALIZATION_OPTIONS, preprocess_malay_transcript
 from extractive import run_extractive
 from abstractive import abstractive_summarize, AVAILABLE_MODELS, DEFAULT_MODEL_KEY
 
@@ -21,7 +21,8 @@ METHODS = ["textrank", "lsa", "electra"]
 
 def compare_all(input_path, mode="meeting", output_dir="summaries",
                 skip_preprocess=False, skip_abstractive=False,
-                abs_model=DEFAULT_MODEL_KEY, abs_mode="beam"):
+                abs_model=DEFAULT_MODEL_KEY, abs_mode="beam",
+                normalization="dictionary"):
     """
     Run all 3 extractive methods on the same input, then abstractive on each.
     
@@ -31,6 +32,7 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
         output_dir: Directory to save the comparison report
         skip_preprocess: If True, skip preprocessing
         skip_abstractive: If True, only compare extractive outputs (faster)
+        normalization: "dictionary", "model", or "hybrid"
     
     Returns:
         dict mapping method name to results
@@ -41,6 +43,7 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
     print(f"{'='*60}")
     print(f"  Input: {input_path}")
     print(f"  Mode:  {mode}")
+    print(f"  Normalize: {normalization}")
     print(f"{'='*60}\n")
 
     with open(input_path, "r", encoding="utf-8") as f:
@@ -50,8 +53,12 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
         print("[Preprocess] Skipped\n")
         cleaned_text = raw_text
     else:
-        print(f"[Preprocess] Cleaning text ({mode} mode)...")
-        cleaned_text = preprocess_malay_transcript(raw_text, mode=mode)
+        print(f"[Preprocess] Cleaning text ({mode} mode, {normalization} normalization)...")
+        cleaned_text = preprocess_malay_transcript(
+            raw_text,
+            mode=mode,
+            normalization=normalization,
+        )
         original_len = len(raw_text.split())
         cleaned_len = len(cleaned_text.split())
         reduction = ((original_len - cleaned_len) / original_len * 100) if original_len > 0 else 0
@@ -109,6 +116,7 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
         f.write(f"{'='*60}\n")
         f.write(f"Input:     {input_path}\n")
         f.write(f"Mode:      {mode}\n")
+        f.write(f"Normalize: {NORMALIZATION_OPTIONS.get(normalization, normalization)}\n")
         f.write(f"Abs Model: {abs_model} ({abs_mode})\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"{'='*60}\n\n")
@@ -177,6 +185,8 @@ Examples:
                         help="Directory to save comparison report (default: summaries)")
     parser.add_argument("--skip-preprocess", action="store_true",
                         help="Skip preprocessing")
+    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="dictionary",
+                        help="Normalization strategy for preprocessing (default: dictionary)")
     parser.add_argument("--extractive-only", action="store_true",
                         help="Only compare extractive outputs (skip abstractive, much faster)")
     parser.add_argument("--abs-model", default=DEFAULT_MODEL_KEY,
@@ -198,5 +208,6 @@ Examples:
         skip_preprocess=args.skip_preprocess,
         skip_abstractive=args.extractive_only,
         abs_model=args.abs_model,
-        abs_mode=args.abs_mode
+        abs_mode=args.abs_mode,
+        normalization=args.normalization
     )

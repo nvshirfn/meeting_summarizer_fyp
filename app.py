@@ -20,7 +20,7 @@ import tokenizers
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 warnings.filterwarnings("ignore")
 
-from preprocess import preprocess_malay_transcript
+from preprocess import NORMALIZATION_OPTIONS, preprocess_malay_transcript
 from extractive import run_extractive
 from abstractive import abstractive_summarize, AVAILABLE_MODELS, DEFAULT_MODEL_KEY
 from topic_modeling import perform_topic_modeling
@@ -106,6 +106,7 @@ def upload_page():
         sentiment_models=SENTIMENT_MODELS,
         topic_models=TOPIC_MODELS,
         abstractive_models=ABSTRACTIVE_MODELS,
+        normalization_options=NORMALIZATION_OPTIONS,
         default_abs=DEFAULT_MODEL_KEY,
     )
 
@@ -121,6 +122,7 @@ def process():
     sentiment_key  = request.form.get("sentiment_model", "lexicon")
     topic_key      = request.form.get("topic_model", "lda")
     abs_model_key  = request.form.get("abstractive_model", DEFAULT_MODEL_KEY)
+    normalization_key = request.form.get("normalization", "dictionary")
 
     # Save uploaded file
     filename = uploaded_file.filename
@@ -145,8 +147,12 @@ def process():
         raw_transcript = stt_result["text"]
 
     # ── STEP 2  Preprocessing ───────────────────────────────────
-    print("[Web] Step 2/5 — Preprocessing …")
-    cleaned_transcript = preprocess_malay_transcript(raw_transcript, mode="meeting")
+    print(f"[Web] Step 2/5 — Preprocessing ({normalization_key}) …")
+    cleaned_transcript = preprocess_malay_transcript(
+        raw_transcript,
+        mode="meeting",
+        normalization=normalization_key,
+    )
 
     # ── STEP 3  Topic Modeling ──────────────────────────────────
     print(f"[Web] Step 3/5 — Topic modeling ({topic_key}) …")
@@ -180,6 +186,7 @@ def process():
         "abstractive_model": ABSTRACTIVE_MODELS.get(abs_model_key, abs_model_key),
         "sentiment_model": SENTIMENT_MODELS.get(sentiment_key, sentiment_key),
         "topic_model": TOPIC_MODELS.get(topic_key, topic_key),
+        "normalization": NORMALIZATION_OPTIONS.get(normalization_key, normalization_key),
         "processing_time": elapsed,
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     }

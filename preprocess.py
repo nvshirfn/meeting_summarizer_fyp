@@ -1,7 +1,60 @@
 import re
 
 
-def preprocess_malay_transcript(text, mode="meeting", lowercase=False):
+NORMALIZATION_OPTIONS = {
+    "dictionary": "Dictionary-Based Mapping",
+    "model": "Model-Based Normalization",
+    "hybrid": "Hybrid (Dictionary + Model)",
+}
+
+_malaya_normalizer = None
+_malaya_normalizer_error = None
+
+
+def _get_malaya_normalizer():
+    """Lazy-load Malaya normalizer with a probabilistic spelling model."""
+    global _malaya_normalizer, _malaya_normalizer_error
+
+    if _malaya_normalizer is not None:
+        return _malaya_normalizer
+
+    if _malaya_normalizer_error is not None:
+        raise RuntimeError(_malaya_normalizer_error)
+
+    try:
+        import malaya
+
+        speller = malaya.spelling_correction.probability.load()
+        _malaya_normalizer = malaya.normalizer.rules.load(speller=speller)
+        return _malaya_normalizer
+    except Exception as exc:
+        _malaya_normalizer_error = str(exc)
+        raise
+
+
+def _apply_model_normalization(text):
+    """
+    Apply Malaya model-assisted normalization.
+
+    Malaya returns a dictionary containing the normalized text under the
+    "normalize" key. If the model cannot be loaded, keep the current text so
+    terminal and web runs can still finish with the selected pipeline.
+    """
+    if not text:
+        return text
+
+    try:
+        normalizer = _get_malaya_normalizer()
+        result = normalizer.normalize(text)
+        if isinstance(result, dict):
+            return result.get("normalize", text)
+        return str(result)
+    except Exception as exc:
+        print(f"[Preprocess] Model normalization unavailable; using current text. Reason: {exc}")
+        return text
+
+
+def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normalization="dictionary"):
     """
     Preprocess Malay text for summarization.
     
@@ -10,10 +63,17 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False):
         mode: "meeting" for spoken transcripts (removes fillers, slang, etc.)
               "written" for news/articles (lighter cleanup only)
         lowercase: Whether to convert the text to lowercase (be careful using this with Abstractive models)
+        normalization: "dictionary", "model", or "hybrid"
     
     Returns:
         Cleaned text string
     """
+    if normalization not in NORMALIZATION_OPTIONS:
+        raise ValueError(
+            f"Unsupported normalization '{normalization}'. "
+            f"Choose one of: {', '.join(NORMALIZATION_OPTIONS)}"
+        )
+
     processed_text = text
 
     if mode == "meeting":
@@ -145,8 +205,12 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False):
             r'\bvibe\b': 'suasana'
         }
 
-        for pattern, replacement in replacements.items():
-            processed_text = re.sub(pattern, replacement, processed_text, flags=re.IGNORECASE)
+        if normalization in ("dictionary", "hybrid"):
+            for pattern, replacement in replacements.items():
+                processed_text = re.sub(pattern, replacement, processed_text, flags=re.IGNORECASE)
+
+        if normalization in ("model", "hybrid"):
+            processed_text = _apply_model_normalization(processed_text)
 
         for pattern in remove_patterns:
             processed_text = re.sub(pattern, '', processed_text, flags=re.IGNORECASE)
@@ -180,10 +244,17 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False):
     if lowercase:
         processed_text = processed_text.lower()
 
+    if mode != "meeting" and normalization in ("model", "hybrid"):
+        processed_text = _apply_model_normalization(processed_text)
+        processed_text = re.sub(r'\s+([.,!?])', r'\1', processed_text)
+        processed_text = re.sub(r'\s+', ' ', processed_text).strip()
+        if lowercase:
+            processed_text = processed_text.lower()
+
     return processed_text
 
 
-def preprocess_file(input_path, output_path=None, mode="meeting", lowercase=False):
+def preprocess_file(input_path, output_path=None, mode="meeting", lowercase=False, normalization="dictionary"):
     """
     Preprocess a text file and optionally save the result.
     
@@ -192,6 +263,7 @@ def preprocess_file(input_path, output_path=None, mode="meeting", lowercase=Fals
         output_path: Path to save cleaned text (None = don't save)
         mode: "meeting" or "written"
         lowercase: Whether to convert text to lowercase
+        normalization: "dictionary", "model", or "hybrid"
     
     Returns:
         Cleaned text string
@@ -199,7 +271,12 @@ def preprocess_file(input_path, output_path=None, mode="meeting", lowercase=Fals
     with open(input_path, "r", encoding="utf-8") as f:
         original = f.read()
 
-    cleaned = preprocess_malay_transcript(original, mode=mode, lowercase=lowercase)
+    cleaned = preprocess_malay_transcript(
+        original,
+        mode=mode,
+        lowercase=lowercase,
+        normalization=normalization,
+    )
 
     if output_path:
         import os
@@ -220,6 +297,8 @@ if __name__ == "__main__":
     parser.add_argument("--output", default=None, help="Path to save cleaned text")
     parser.add_argument("--mode", choices=["meeting", "written"], default="meeting",
                         help="Processing mode: 'meeting' for spoken transcripts, 'written' for news/articles")
+    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="dictionary",
+                        help="Normalization strategy: dictionary, model, or hybrid")
     parser.add_argument("--lowercase", action="store_true", help="Enable lowercasing of text")
     
     args = parser.parse_args()
@@ -230,7 +309,13 @@ if __name__ == "__main__":
         base = os.path.splitext(os.path.basename(args.input))[0]
         args.output = f"cleaned_text/{base}_cleaned.txt"
 
-    cleaned = preprocess_file(args.input, args.output, mode=args.mode, lowercase=args.lowercase)
+    cleaned = preprocess_file(
+        args.input,
+        args.output,
+        mode=args.mode,
+        lowercase=args.lowercase,
+        normalization=args.normalization,
+    )
 
     # Show stats
     with open(args.input, "r", encoding="utf-8") as f:

@@ -9,7 +9,7 @@ import os
 import argparse
 from datetime import datetime
 
-from preprocess import preprocess_malay_transcript
+from preprocess import NORMALIZATION_OPTIONS, preprocess_malay_transcript
 from extractive import run_extractive
 from abstractive import abstractive_summarize, AVAILABLE_MODELS, DEFAULT_MODEL_KEY
 from topic_modeling import perform_topic_modeling
@@ -19,7 +19,7 @@ from sentiment_analysis import analyze_sentiment
 def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
                  output_dir="summaries", skip_preprocess=False,
                  abs_model=DEFAULT_MODEL_KEY, abs_mode="beam",
-                 postprocess=True):
+                 postprocess=True, normalization="dictionary"):
     """
     Full summarization pipeline: Preprocess → Extractive → Abstractive → Save Report.
     
@@ -32,6 +32,7 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         abs_model: Abstractive model key ("t5-small", "t5-base", "ms-t5-small", "ms-t5-base")
         abs_mode: Decoding strategy ("beam" or "sampling")
         postprocess: If True, use Malaya's built-in ROUGE postprocessing
+        normalization: "dictionary", "model", or "hybrid"
     
     Returns:
         dict with keys: cleaned_text, extractive_result, abstractive_summary, report_path
@@ -47,6 +48,7 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
     print(f"  Mode:        {mode}")
     print(f"  Extractive:  {extractive_method.upper()}")
     print(f"  Abstractive: {abs_model} ({abs_mode})")
+    print(f"  Normalize:   {normalization}")
     print(f"  Postprocess: {postprocess}")
     print(f"  Preprocess:  {'Skipped' if skip_preprocess else 'Enabled'}")
     print(f"{'='*60}\n")
@@ -61,8 +63,12 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         print("[Step 1/3] Preprocessing: SKIPPED (using input as-is)\n")
         cleaned_text = raw_text
     else:
-        print(f"[Step 1/3] Preprocessing ({mode} mode)...")
-        cleaned_text = preprocess_malay_transcript(raw_text, mode=mode)
+        print(f"[Step 1/3] Preprocessing ({mode} mode, {normalization} normalization)...")
+        cleaned_text = preprocess_malay_transcript(
+            raw_text,
+            mode=mode,
+            normalization=normalization,
+        )
         cleaned_word_count = len(cleaned_text.split())
         reduction = ((original_word_count - cleaned_word_count) / original_word_count * 100) if original_word_count > 0 else 0
         print(f"  Original: {original_word_count} words → Cleaned: {cleaned_word_count} words ({reduction:.1f}% reduced)\n")
@@ -123,6 +129,7 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         f.write(f"Mode:               {mode}\n")
         f.write(f"Extractive Method:  {extractive_method.upper()}\n")
         f.write(f"Abstractive Model:  {abs_model} ({abs_mode})\n")
+        f.write(f"Normalization:      {NORMALIZATION_OPTIONS.get(normalization, normalization)}\n")
         f.write(f"Postprocess:        {postprocess}\n")
         f.write(f"Generated:          {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
         f.write(f"{'='*60}\n\n")
@@ -181,6 +188,8 @@ Examples:
                         help="Directory to save output reports (default: summaries)")
     parser.add_argument("--skip-preprocess", action="store_true",
                         help="Skip preprocessing (use if input is already cleaned)")
+    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="dictionary",
+                        help="Normalization strategy for preprocessing (default: dictionary)")
     parser.add_argument("--abs-model", default=DEFAULT_MODEL_KEY,
                         choices=list(AVAILABLE_MODELS.keys()),
                         help=f"Abstractive model (default: {DEFAULT_MODEL_KEY})")
@@ -203,5 +212,6 @@ Examples:
         skip_preprocess=args.skip_preprocess,
         abs_model=args.abs_model,
         abs_mode=args.abs_mode,
-        postprocess=not args.no_postprocess
+        postprocess=not args.no_postprocess,
+        normalization=args.normalization
     )

@@ -7,9 +7,52 @@ Supports three methods:
 """
 
 import re
+import unicodedata
 import warnings
 
 warnings.filterwarnings("ignore")
+
+
+def preprocess_for_sentiment(text):
+    """
+    Light, sentiment-aware cleanup.
+
+    Keep negation words and sentence punctuation because both are useful for
+    sentiment analysis, especially for Naive Bayes and sentence splitting.
+    """
+    if not text:
+        return ""
+
+    text = unicodedata.normalize("NFKC", text)
+
+    replacements = {
+        r'\btak\b': 'tidak',
+        r'\btdk\b': 'tidak',
+        r'\bx\b': 'tidak',
+        r'\btakde\b': 'tidak ada',
+        r'\btakkan\b': 'tidak mungkin',
+        r'\btakkanlah\b': 'tidak mungkin',
+        r'\btakyah\b': 'tidak perlu',
+        r'\btak payah\b': 'tidak perlu',
+        r'\btakpe\b': 'tidak mengapa',
+        r'\bbest\b': 'seronok',
+        r'\bfrust\b': 'kecewa',
+        r'\bboring\b': 'bosan',
+    }
+
+    for pattern, replacement in replacements.items():
+        text = re.sub(pattern, replacement, text, flags=re.IGNORECASE)
+
+    text = re.sub(r'https?://\S+|www\.\S+', ' ', text)
+    text = re.sub(r'\S+@\S+', ' ', text)
+    text = re.sub(r'\.{2,}', '.', text)
+    text = re.sub(r'!{2,}', '!', text)
+    text = re.sub(r'\?{2,}', '?', text)
+    text = re.sub(r'[^\w\s.,!?\'"-]', ' ', text)
+    text = re.sub(r'\s+([.,!?])', r'\1', text)
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    return text
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -284,6 +327,17 @@ def analyze_sentiment(text, method="bert"):
         dict with sentiment label and scores.
     """
     if not text or not text.strip():
+        return {
+            "sentiment": "neutral",
+            "positive_score": 0.0,
+            "negative_score": 0.0,
+            "neutral_score": 0.0,
+            "confidence": 0.0,
+            "sentence_results": [],
+        }
+
+    text = preprocess_for_sentiment(text)
+    if not text:
         return {
             "sentiment": "neutral",
             "positive_score": 0.0,

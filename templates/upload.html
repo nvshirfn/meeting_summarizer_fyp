@@ -116,6 +116,16 @@
               </select>
             </div>
 
+            <!-- Preprocessing Normalization -->
+            <div class="field">
+              <label class="field__label" for="normalization">Preprocess Normalization</label>
+              <select class="field__select" name="normalization" id="normalization">
+                {% for key, label in normalization_options.items() %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+
             <!-- Topic -->
             <div class="field">
               <label class="field__label" for="topic_model">Topic Detection Model</label>
