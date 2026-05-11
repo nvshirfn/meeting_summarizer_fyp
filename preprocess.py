@@ -7,23 +7,22 @@ NORMALIZATION_OPTIONS = {
     "hybrid": "Hybrid (Dictionary + Model)",
 }
 
+# ── Model-based normalization state ────────────────────────────
 _malaya_normalizer = None
 _malaya_normalizer_error = None
+_malaya_rules_regex = None   # compiled regex of malaya's 3,374-entry slang dict
+_malaya_rules_map = None     # lowercased lookup: informal → formal
 
 
 def _get_malaya_normalizer():
-    """Lazy-load Malaya normalizer with a probabilistic spelling model."""
+    """Lazy-load malaya.normalizer.rules with a probabilistic spelling model."""
     global _malaya_normalizer, _malaya_normalizer_error
-
     if _malaya_normalizer is not None:
         return _malaya_normalizer
-
     if _malaya_normalizer_error is not None:
         raise RuntimeError(_malaya_normalizer_error)
-
     try:
         import malaya
-
         speller = malaya.spelling_correction.probability.load()
         _malaya_normalizer = malaya.normalizer.rules.load(speller=speller)
         return _malaya_normalizer
@@ -32,18 +31,47 @@ def _get_malaya_normalizer():
         raise
 
 
+def _get_malaya_rules_regex():
+    """
+    Build (once) a single compiled regex from malaya.preprocessing.rules_normalizer.
+    That dict has 3,374 Malay slang→formal entries — far more comprehensive than
+    the hand-written replacements dict. Longer phrases are matched first so
+    multi-word entries (e.g. 'tak payah') beat their sub-words ('tak').
+    """
+    global _malaya_rules_regex, _malaya_rules_map
+    if _malaya_rules_regex is not None:
+        return _malaya_rules_regex, _malaya_rules_map
+    import malaya
+    raw = malaya.preprocessing.rules_normalizer          # dict {informal: formal}
+    sorted_items = sorted(raw.items(), key=lambda x: len(x[0]), reverse=True)
+    _malaya_rules_map = {k.lower(): v for k, v in sorted_items}
+    pattern = '|'.join(rf'\b{re.escape(k)}\b' for k in _malaya_rules_map)
+    _malaya_rules_regex = re.compile(pattern, re.IGNORECASE)
+    return _malaya_rules_regex, _malaya_rules_map
+
+
 def _apply_model_normalization(text):
     """
-    Apply Malaya model-assisted normalization.
+    Two-pass normalization using Malaya's built-in resources:
 
-    Malaya returns a dictionary containing the normalized text under the
-    "normalize" key. If the model cannot be loaded, keep the current text so
-    terminal and web runs can still finish with the selected pipeline.
+    Pass 1 — malaya.preprocessing.rules_normalizer (3,374 entries):
+        Replaces informal/slang Malay words with their formal equivalents using
+        a single compiled regex (efficient, whole-word matching, longest-match).
+
+    Pass 2 — malaya.normalizer.rules + probability speller:
+        Corrects remaining misspellings using a probabilistic Malay language
+        model, then applies Malaya's morphological rules on top.
+
+    Falls back to the unchanged text if Malaya cannot be loaded.
     """
     if not text:
         return text
-
     try:
+        # Pass 1: comprehensive slang replacement
+        regex, rules_map = _get_malaya_rules_regex()
+        text = regex.sub(lambda m: rules_map[m.group(0).lower()], text)
+
+        # Pass 2: spelling correction + morphological rules
         normalizer = _get_malaya_normalizer()
         result = normalizer.normalize(text)
         if isinstance(result, dict):
