@@ -8,35 +8,48 @@ NORMALIZATION_OPTIONS = {
 }
 
 # ── Model-based normalization state ────────────────────────────
-_malaya_normalizer = None
-_malaya_normalizer_error = None
-_malaya_rules_regex = None   # compiled regex of malaya's 3,374-entry slang dict
-_malaya_rules_map = None     # lowercased lookup: informal → formal
+_malaya_rules_regex = None   # compiled regex of malaya's rules_normalizer dict
+_malaya_rules_map = None     # filtered lowercased lookup: informal → formal
 
+# English words that must never be replaced — they appear in Malaya's slang
+# dict but are also common English words in code-switched Malaysian speech.
+# Without this guard, "To be honest" → "kepada jadi honest".
+_ENGLISH_GUARD = frozenset({
+    'a', 'an', 'the', 'this', 'that', 'these', 'those',
+    'and', 'or', 'but', 'so', 'yet', 'for', 'nor', 'to', 'of', 'in',
+    'on', 'at', 'by', 'from', 'with', 'as', 'into', 'about', 'after',
+    'before', 'between', 'through', 'without', 'than', 'if', 'then',
+    'because', 'since', 'though', 'while',
+    'be', 'is', 'am', 'are', 'was', 'were', 'been', 'being',
+    'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would',
+    'could', 'should', 'may', 'might', 'shall', 'can',
+    'i', 'me', 'my', 'mine', 'we', 'us', 'our', 'ours',
+    'you', 'your', 'yours', 'he', 'him', 'his', 'she', 'her', 'hers',
+    'they', 'them', 'their', 'theirs', 'it', 'its',
+    'what', 'which', 'who', 'whom', 'whose', 'when', 'where', 'why', 'how',
+    'back', 'get', 'let', 'go', 'come', 'take', 'give', 'look', 'use',
+    'find', 'tell', 'ask', 'try', 'call', 'feel', 'know', 'say', 'think',
+    'see', 'make', 'put', 'want', 'need', 'help', 'keep', 'run', 'turn',
+    'low', 'high', 'up', 'down', 'off', 'out', 'over', 'under',
+    'more', 'most', 'less', 'just', 'only', 'also', 'even', 'very',
+    'too', 'quite', 'much', 'many', 'some', 'any', 'all', 'both',
+    'right', 'left', 'last', 'first', 'next', 'old', 'new', 'good',
+    'long', 'short', 'big', 'small', 'hot', 'cold', 'no', 'yes', 'not',
+})
 
-def _get_malaya_normalizer():
-    """Lazy-load malaya.normalizer.rules with a probabilistic spelling model."""
-    global _malaya_normalizer, _malaya_normalizer_error
-    if _malaya_normalizer is not None:
-        return _malaya_normalizer
-    if _malaya_normalizer_error is not None:
-        raise RuntimeError(_malaya_normalizer_error)
-    try:
-        import malaya
-        speller = malaya.spelling_correction.probability.load()
-        _malaya_normalizer = malaya.normalizer.rules.load(speller=speller)
-        return _malaya_normalizer
-    except Exception as exc:
-        _malaya_normalizer_error = str(exc)
-        raise
+# Malaya's rules_normalizer has some semantically incorrect entries.
+# Add the informal form here to suppress a bad mapping.
+_MALAYA_DICT_EXCLUSIONS = frozenset({
+    'pasal',  # Malaya maps → "masalah" (problem), but "pasal" = "about/because/regarding"
+})
 
 
 def _get_malaya_rules_regex():
     """
-    Build (once) a single compiled regex from malaya.preprocessing.rules_normalizer.
-    That dict has 3,374 Malay slang→formal entries — far more comprehensive than
-    the hand-written replacements dict. Longer phrases are matched first so
-    multi-word entries (e.g. 'tak payah') beat their sub-words ('tak').
+    Build (once) a compiled regex from malaya.preprocessing.rules_normalizer,
+    excluding English function words (_ENGLISH_GUARD) and known bad entries
+    (_MALAYA_DICT_EXCLUSIONS) to protect code-switched Malay-English text.
+    Longer phrases are matched first so multi-word entries beat their sub-words.
     """
     global _malaya_rules_regex, _malaya_rules_map
     if _malaya_rules_regex is not None:
@@ -44,7 +57,11 @@ def _get_malaya_rules_regex():
     import malaya
     raw = malaya.preprocessing.rules_normalizer          # dict {informal: formal}
     sorted_items = sorted(raw.items(), key=lambda x: len(x[0]), reverse=True)
-    _malaya_rules_map = {k.lower(): v for k, v in sorted_items}
+    _malaya_rules_map = {
+        k.lower(): v
+        for k, v in sorted_items
+        if k.lower() not in _ENGLISH_GUARD and k.lower() not in _MALAYA_DICT_EXCLUSIONS
+    }
     pattern = '|'.join(rf'\b{re.escape(k)}\b' for k in _malaya_rules_map)
     _malaya_rules_regex = re.compile(pattern, re.IGNORECASE)
     return _malaya_rules_regex, _malaya_rules_map
@@ -52,31 +69,16 @@ def _get_malaya_rules_regex():
 
 def _apply_model_normalization(text):
     """
-    Two-pass normalization using Malaya's built-in resources:
-
-    Pass 1 — malaya.preprocessing.rules_normalizer (3,374 entries):
-        Replaces informal/slang Malay words with their formal equivalents using
-        a single compiled regex (efficient, whole-word matching, longest-match).
-
-    Pass 2 — malaya.normalizer.rules + probability speller:
-        Corrects remaining misspellings using a probabilistic Malay language
-        model, then applies Malaya's morphological rules on top.
-
+    Normalize Malay slang using malaya.preprocessing.rules_normalizer (~3,374 entries),
+    compiled to a single regex. English function words and known bad Malaya dict entries
+    are excluded to prevent corrupting code-switched Malay-English meeting transcripts.
     Falls back to the unchanged text if Malaya cannot be loaded.
     """
     if not text:
         return text
     try:
-        # Pass 1: comprehensive slang replacement
         regex, rules_map = _get_malaya_rules_regex()
-        text = regex.sub(lambda m: rules_map[m.group(0).lower()], text)
-
-        # Pass 2: spelling correction + morphological rules
-        normalizer = _get_malaya_normalizer()
-        result = normalizer.normalize(text)
-        if isinstance(result, dict):
-            return result.get("normalize", text)
-        return str(result)
+        return regex.sub(lambda m: rules_map[m.group(0).lower()], text)
     except Exception as exc:
         print(f"[Preprocess] Model normalization unavailable; using current text. Reason: {exc}")
         return text
