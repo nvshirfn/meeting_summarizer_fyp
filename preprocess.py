@@ -41,6 +41,7 @@ _ENGLISH_GUARD = frozenset({
 # Add the informal form here to suppress a bad mapping.
 _MALAYA_DICT_EXCLUSIONS = frozenset({
     'pasal',  # Malaya maps → "masalah" (problem), but "pasal" = "about/because/regarding"
+    'yb',     # Malaya maps → "Yang Bahagia" (wrong); YB = Yang Berhormat (elected politicians)
 })
 
 
@@ -215,7 +216,6 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
             r'\bbest\b': 'seronok',
             r'\bblur\b': 'keliru',
             r'\bboring\b': 'bosan',
-
             r'\bchill\b': 'santai',
             r'\bfrust\b': 'kecewa',
             r'\bfor example\b': 'sebagai contoh',
