@@ -44,6 +44,8 @@ _MALAYA_DICT_EXCLUSIONS = frozenset({
     'pasal',   # Malaya maps → "masalah" (problem), but "pasal" = "about/because/regarding"
     'yb',      # Malaya maps → "Yang Bahagia" (wrong); YB = Yang Berhormat (elected politicians)
     'diving',  # Malaya maps → "junam" (a price plunge), not "menyelam" (the sport)
+    'kantoi',  # Malaya maps → "terbongkar rahsia" (over-interprets); kantoi is casual slang for "got caught"
+    'spy',     # Malaya maps → "supaya" (so that) — completely wrong, semantic corruption
 })
 
 
