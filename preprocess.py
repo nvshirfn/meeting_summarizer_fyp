@@ -41,8 +41,9 @@ _ENGLISH_GUARD = frozenset({
 # Malaya's rules_normalizer has some semantically incorrect entries.
 # Add the informal form here to suppress a bad mapping.
 _MALAYA_DICT_EXCLUSIONS = frozenset({
-    'pasal',  # Malaya maps → "masalah" (problem), but "pasal" = "about/because/regarding"
-    'yb',     # Malaya maps → "Yang Bahagia" (wrong); YB = Yang Berhormat (elected politicians)
+    'pasal',   # Malaya maps → "masalah" (problem), but "pasal" = "about/because/regarding"
+    'yb',      # Malaya maps → "Yang Bahagia" (wrong); YB = Yang Berhormat (elected politicians)
+    'diving',  # Malaya maps → "junam" (a price plunge), not "menyelam" (the sport)
 })
 
 
