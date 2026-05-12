@@ -237,7 +237,9 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
         }
 
         if normalization in ("dictionary", "hybrid"):
-            for pattern, replacement in replacements.items():
+            # Apply longest patterns first so multi-word entries (e.g. "tak payah")
+            # match before single-word ones (e.g. "tak") consume their first word.
+            for pattern, replacement in sorted(replacements.items(), key=lambda x: -len(x[0])):
                 processed_text = re.sub(pattern, replacement, processed_text, flags=re.IGNORECASE)
 
         if normalization in ("model", "hybrid"):
