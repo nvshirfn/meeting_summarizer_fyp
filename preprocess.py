@@ -35,6 +35,7 @@ _ENGLISH_GUARD = frozenset({
     'too', 'quite', 'much', 'many', 'some', 'any', 'all', 'both',
     'right', 'left', 'last', 'first', 'next', 'old', 'new', 'good',
     'long', 'short', 'big', 'small', 'hot', 'cold', 'no', 'yes', 'not',
+    'care',
 })
 
 # Malaya's rules_normalizer has some semantically incorrect entries.
