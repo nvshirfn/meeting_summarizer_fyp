@@ -16,7 +16,7 @@ _malaya_rules_map = None     # filtered lowercased lookup: informal → formal
 # Without this guard, "To be honest" → "kepada jadi honest".
 _ENGLISH_GUARD = frozenset({
     'a', 'an', 'the', 'this', 'that', 'these', 'those',
-    'and', 'or', 'but', 'so', 'yet', 'for', 'nor', 'to', 'of', 'in',
+    'and', 'or', 'but', 'yet', 'for', 'nor', 'to', 'of', 'in',
     'on', 'at', 'by', 'from', 'with', 'as', 'into', 'about', 'after',
     'before', 'between', 'through', 'without', 'than', 'if', 'then',
     'because', 'since', 'though', 'while',
