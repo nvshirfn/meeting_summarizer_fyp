@@ -66,6 +66,29 @@
         </div>
       </div>
 
+      <!-- ── Text Preprocessing ───────────────────────────── -->
+      <div class="card mt-2">
+        <div class="card__header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+          </svg>
+          Text Preprocessing
+        </div>
+        <div class="card__body">
+          <div class="form-grid">
+            <div class="field">
+              <label class="field__label" for="normalization">Normalization Strategy</label>
+              <select class="field__select" name="normalization" id="normalization">
+                {% for key, label in normalization_options.items() %}
+                <option value="{{ key }}">{{ label }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ── Model Selection ──────────────────────────────── -->
       <div class="card mt-2">
         <div class="card__header">
@@ -111,16 +134,6 @@
               <label class="field__label" for="sentiment_model">Sentiment Model</label>
               <select class="field__select" name="sentiment_model" id="sentiment_model">
                 {% for key, label in sentiment_models.items() %}
-                <option value="{{ key }}">{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <!-- Preprocessing Normalization -->
-            <div class="field">
-              <label class="field__label" for="normalization">Preprocess Normalization</label>
-              <select class="field__select" name="normalization" id="normalization">
-                {% for key, label in normalization_options.items() %}
                 <option value="{{ key }}">{{ label }}</option>
                 {% endfor %}
               </select>
