@@ -116,7 +116,7 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
         remove_list = [
             'ah', 'aa', 'ahh', 'alah', 'aiyoh', 'aiyaya', 'bruh', 'beb', 'babe', 
             'ceh', 'ehh', 'err', 'emm', 'fuh', 'ha', 'haa', 'halah', 'hekeleh', 
-            'hm', 'hmm', 'kan', 'lah', 'mat', 'ouh', 'peh', 'uhm', 'wuih'
+            'hm', 'hmm', 'kan', 'lah', 'ouh', 'peh', 'uhm', 'wuih'
         ]
         remove_patterns = [rf'\b{word}[.,!?]?\b' for word in remove_list]
 
