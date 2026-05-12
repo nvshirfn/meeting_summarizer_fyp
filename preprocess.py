@@ -41,11 +41,14 @@ _ENGLISH_GUARD = frozenset({
 # Malaya's rules_normalizer has some semantically incorrect entries.
 # Add the informal form here to suppress a bad mapping.
 _MALAYA_DICT_EXCLUSIONS = frozenset({
-    'pasal',   # Malaya maps → "masalah" (problem), but "pasal" = "about/because/regarding"
-    'yb',      # Malaya maps → "Yang Bahagia" (wrong); YB = Yang Berhormat (elected politicians)
-    'diving',  # Malaya maps → "junam" (a price plunge), not "menyelam" (the sport)
-    'kantoi',  # Malaya maps → "terbongkar rahsia" (over-interprets); kantoi is casual slang for "got caught"
-    'spy',     # Malaya maps → "supaya" (so that) — completely wrong, semantic corruption
+    'pasal',    # Malaya maps → "masalah" (problem), but "pasal" = "about/because/regarding"
+    'yb',       # Malaya maps → "Yang Bahagia" (wrong); YB = Yang Berhormat (elected politicians)
+    'diving',   # Malaya maps → "junam" (a price plunge), not "menyelam" (the sport)
+    'kantoi',   # Malaya maps → "terbongkar rahsia" (over-interprets); kantoi is casual slang for "got caught"
+    'spy',      # Malaya maps → "supaya" (so that) — completely wrong, semantic corruption
+    'alak',     # Malaya maps → "kepala"; corrupts religious proper nouns like "Al-Alak" (Quranic surah)
+    'min',      # Malaya maps → "admin"; corrupts Arabic Quranic text and prepositions
+    'justeru',  # Malaya maps → "justru" (Indonesian variant); justeru is the correct standard BM form
 })
 
 
