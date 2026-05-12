@@ -249,11 +249,11 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
             processed_text = re.sub(pattern, '', processed_text, flags=re.IGNORECASE)
 
         # 5. REPETITIONS (The "Double Word" Pattern)
-        # Remove repeated words: "kita kita" → "kita"
-        processed_text = re.sub(r'\b(\w+)(?:\s+\1\b)+', r'\1', processed_text)
+        # Remove repeated words: "kita kita" → "kita" (case-insensitive so "Tak tak" also collapses)
+        processed_text = re.sub(r'\b(\w+)(?:\s+\1\b)+', r'\1', processed_text, flags=re.IGNORECASE)
 
         # Remove repeated phrases (40+ chars)
-        processed_text = re.sub(r'(.{40,}?)\s+\1', r'\1', processed_text)
+        processed_text = re.sub(r'(.{40,}?)\s+\1', r'\1', processed_text, flags=re.IGNORECASE)
 
     # === COMMON CLEANUP (both modes) ===
 
