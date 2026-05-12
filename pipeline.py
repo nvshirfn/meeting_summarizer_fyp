@@ -32,7 +32,7 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         abs_model: Abstractive model key ("t5-small", "t5-base", "ms-t5-small", "ms-t5-base")
         abs_mode: Decoding strategy ("beam" or "sampling")
         postprocess: If True, use Malaya's built-in ROUGE postprocessing
-        normalization: "dictionary", "model", or "hybrid"
+        normalization: "dictionary", "malaya", or "hybrid"
     
     Returns:
         dict with keys: cleaned_text, extractive_result, abstractive_summary, report_path

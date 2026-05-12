@@ -3,11 +3,11 @@ import re
 
 NORMALIZATION_OPTIONS = {
     "dictionary": "Dictionary-Based Mapping",
-    "model": "Model-Based Normalization",
-    "hybrid": "Hybrid (Dictionary + Model)",
+    "malaya": "Malaya Dictionary (Extended)",
+    "hybrid": "Hybrid (Dictionary + Malaya)",
 }
 
-# ── Model-based normalization state ────────────────────────────
+# ── Malaya-based normalization state ───────────────────────────
 _malaya_rules_regex = None   # compiled regex of malaya's rules_normalizer dict
 _malaya_rules_map = None     # filtered lowercased lookup: informal → formal
 
@@ -70,7 +70,7 @@ def _get_malaya_rules_regex():
     return _malaya_rules_regex, _malaya_rules_map
 
 
-def _apply_model_normalization(text):
+def _apply_malaya_normalization(text):
     """
     Normalize Malay slang using malaya.preprocessing.rules_normalizer (~3,374 entries),
     compiled to a single regex. English function words and known bad Malaya dict entries
@@ -83,7 +83,7 @@ def _apply_model_normalization(text):
         regex, rules_map = _get_malaya_rules_regex()
         return regex.sub(lambda m: rules_map[m.group(0).lower()], text)
     except Exception as exc:
-        print(f"[Preprocess] Model normalization unavailable; using current text. Reason: {exc}")
+        print(f"[Preprocess] Malaya normalization unavailable; using current text. Reason: {exc}")
         return text
 
 
@@ -96,8 +96,8 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
         mode: "meeting" for spoken transcripts (removes fillers, slang, etc.)
               "written" for news/articles (lighter cleanup only)
         lowercase: Whether to convert the text to lowercase (be careful using this with Abstractive models)
-        normalization: "dictionary", "model", or "hybrid"
-    
+        normalization: "dictionary", "malaya", or "hybrid"
+
     Returns:
         Cleaned text string
     """
@@ -242,8 +242,8 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
             for pattern, replacement in sorted(replacements.items(), key=lambda x: -len(x[0])):
                 processed_text = re.sub(pattern, replacement, processed_text, flags=re.IGNORECASE)
 
-        if normalization in ("model", "hybrid"):
-            processed_text = _apply_model_normalization(processed_text)
+        if normalization in ("malaya", "hybrid"):
+            processed_text = _apply_malaya_normalization(processed_text)
 
         for pattern in remove_patterns:
             processed_text = re.sub(pattern, '', processed_text, flags=re.IGNORECASE)
@@ -277,8 +277,8 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
     if lowercase:
         processed_text = processed_text.lower()
 
-    if mode != "meeting" and normalization in ("model", "hybrid"):
-        processed_text = _apply_model_normalization(processed_text)
+    if mode != "meeting" and normalization in ("malaya", "hybrid"):
+        processed_text = _apply_malaya_normalization(processed_text)
         processed_text = re.sub(r'\s+([.,!?])', r'\1', processed_text)
         processed_text = re.sub(r'\s+', ' ', processed_text).strip()
         if lowercase:
@@ -296,8 +296,8 @@ def preprocess_file(input_path, output_path=None, mode="meeting", lowercase=Fals
         output_path: Path to save cleaned text (None = don't save)
         mode: "meeting" or "written"
         lowercase: Whether to convert text to lowercase
-        normalization: "dictionary", "model", or "hybrid"
-    
+        normalization: "dictionary", "malaya", or "hybrid"
+
     Returns:
         Cleaned text string
     """
@@ -331,7 +331,7 @@ if __name__ == "__main__":
     parser.add_argument("--mode", choices=["meeting", "written"], default="meeting",
                         help="Processing mode: 'meeting' for spoken transcripts, 'written' for news/articles")
     parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="dictionary",
-                        help="Normalization strategy: dictionary, model, or hybrid")
+                        help="Normalization strategy: dictionary, malaya, or hybrid")
     parser.add_argument("--lowercase", action="store_true", help="Enable lowercasing of text")
     
     args = parser.parse_args()

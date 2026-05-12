@@ -32,7 +32,7 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
         output_dir: Directory to save the comparison report
         skip_preprocess: If True, skip preprocessing
         skip_abstractive: If True, only compare extractive outputs (faster)
-        normalization: "dictionary", "model", or "hybrid"
+        normalization: "dictionary", "malaya", or "hybrid"
     
     Returns:
         dict mapping method name to results
