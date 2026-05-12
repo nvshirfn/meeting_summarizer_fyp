@@ -134,6 +134,7 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
             r'\bcamtu\b': 'macam itu',
             r'\bcenggitu\b': 'macam itu',
             r'\bcenggini\b': 'macam ini',
+            r'\bcokia\b': 'biasa-biasa',
             r'\bcite\b': 'cerita',
             r'\bciter\b': 'cerita',
             r'\bdiorang\b': 'mereka',
@@ -214,7 +215,7 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
             r'\bbest\b': 'seronok',
             r'\bblur\b': 'keliru',
             r'\bboring\b': 'bosan',
-            r'\bbimbo\b': 'wanita kurang cerdik',
+
             r'\bchill\b': 'santai',
             r'\bfrust\b': 'kecewa',
             r'\bfor example\b': 'sebagai contoh',
