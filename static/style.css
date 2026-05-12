@@ -159,6 +159,68 @@ body {
   padding: 1.4rem;
 }
 
+.card__desc {
+  font-size: .9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin-bottom: 1.1rem;
+}
+
+/* ── Radio Cards ────────────────────────────────────────────── */
+.radio-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: .9rem;
+}
+
+.radio-card {
+  position: relative;
+  display: block;
+  padding: 1.1rem 1.2rem;
+  border: 2px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+
+.radio-card:hover {
+  border-color: var(--primary);
+  background: var(--surface-alt);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+.radio-card input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.radio-card:has(input:checked) {
+  border-color: var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.radio-card:has(input:checked) .radio-card__title {
+  color: var(--primary-dark);
+}
+
+.radio-card__title {
+  font-weight: 600;
+  font-size: .95rem;
+  color: var(--text);
+  margin-bottom: .35rem;
+  transition: color var(--transition);
+}
+
+.radio-card__desc {
+  font-size: .82rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
 /* ── Upload Zone ────────────────────────────────────────────── */
 .upload-zone {
   border: 2px dashed var(--border);

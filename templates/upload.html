@@ -76,15 +76,23 @@
           Text Preprocessing
         </div>
         <div class="card__body">
-          <div class="form-grid">
-            <div class="field">
-              <label class="field__label" for="normalization">Normalization Strategy</label>
-              <select class="field__select" name="normalization" id="normalization">
-                {% for key, label in normalization_options.items() %}
-                <option value="{{ key }}">{{ label }}</option>
-                {% endfor %}
-              </select>
-            </div>
+          <p class="card__desc">
+            Choose how informal Malay slang is normalized to formal Bahasa Malaysia before NLP processing.
+          </p>
+          <div class="radio-cards">
+            {% for key, label in normalization_options.items() %}
+            <label class="radio-card">
+              <input type="radio" name="normalization" value="{{ key }}" {% if loop.first %}checked{% endif %} />
+              <div class="radio-card__body">
+                <div class="radio-card__title">{{ label }}</div>
+                <div class="radio-card__desc">
+                  {% if key == 'dictionary' %}~70 hand-curated entries for common Malay slang and code-switched English.{% endif %}
+                  {% if key == 'malaya' %}3,374-entry dictionary from the Malaya library — broader vocabulary coverage.{% endif %}
+                  {% if key == 'hybrid' %}Combines both dictionaries for maximum normalization coverage.{% endif %}
+                </div>
+              </div>
+            </label>
+            {% endfor %}
           </div>
         </div>
       </div>
