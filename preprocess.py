@@ -262,7 +262,7 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
 
     # 2. SPECIAL CHARACTER REMOVAL
     # Match any character that is NOT alphanumeric, whitespace, or standard punctuation
-    processed_text = re.sub(r'[^\w\s.,!?\'"-]', '', processed_text)
+    processed_text = re.sub(r'[^\w\s.,!?\'"%/#-]', '', processed_text)
 
     # 3. Remove space before punctuation
     processed_text = re.sub(r'\s+([.,!?])', r'\1', processed_text)
