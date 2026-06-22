@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 *.log
 *.tmp
+summaries/
+uploads/
+cleaned_text/
+stt_transcription/
