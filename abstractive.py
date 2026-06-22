@@ -118,11 +118,11 @@ def _load_model(model_name):
 
 
 def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
-                          max_length=512, min_length=30, length_penalty=2.0,
+                          max_length=200, min_length=30, length_penalty=1.0,
                           postprocess=True, bullet_points=True,
                           # Beam search params
                           num_beams=5, no_repeat_ngram_size=3,
-                          repetition_penalty=2.0, early_stopping=True,
+                          repetition_penalty=1.3, early_stopping=True,
                           # Sampling params
                           top_p=0.92, top_k=0, temperature=0.7,
                           # Postprocess params
@@ -198,6 +198,10 @@ def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
             "threshold": threshold,
             "reject_similarity": reject_similarity,
         }
+
+    words = text.split()
+    if len(words) > 300:
+        text = " ".join(words[:300])
 
     result = loaded_model.generate([text], **gen_kwargs, **pp_kwargs)
 

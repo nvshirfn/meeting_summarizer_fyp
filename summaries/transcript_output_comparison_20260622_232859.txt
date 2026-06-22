@@ -1,0 +1,62 @@
+EXTRACTIVE METHOD COMPARISON REPORT
+============================================================
+Input:     stt_transcription/transcript_output.txt
+Mode:      meeting
+Normalize: Dictionary-Based Mapping
+Abs Model: ms-t5-base (sampling)
+Generated: 2026-06-22 23:28:59
+============================================================
+
+────────────────────────────────────────────────────────────
+METHOD: TEXTRANK
+────────────────────────────────────────────────────────────
+Extracted 3 / 18 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Saya telah mencadangkan bahawa penubuhan cawangan baru di Ampang Kuala Lumpur dibuka kerana unit kami mendapati bahawa dengan penubuhan cawangan baru di Kuala Lumpur ini ia dapat menarik pelabur-pelabur asing dan juga dalam negara serta syarikat-syarikat yang besar untuk bergabung dengan syarikat kita dalam menjana pendapatan pada tahun-tahun akan datang.
+  2. okey, berdasarkan research yang kami telah lakukan di Ampang Kuala Lumpur, dengan merge ataupun adventure ataupun kerjasama dengan syarikat-syarikat Induk di Kuala Lumpur dengan merge ataupun venture ataupun kerjasama dengan syarikat-syarikat induk di Kuala Lumpur yang lain, kita dapat menarik stakeholder dan juga shareholder daripada syarikat-syarikat lain untuk membantu kita meningkatkan saham yang ada.
+  3. Adakah terdapat lain-lain syarikat yang hampir sama dengan kita?
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Cawangan baru di Ampang Kuala Lumpur boleh menarik pelabur asing dan juga dalam negara
+•	Kita boleh menarik pemegang saham dan juga pemegang saham daripada syarikat-syarikat yang serupa
+
+────────────────────────────────────────────────────────────
+METHOD: LSA
+────────────────────────────────────────────────────────────
+Extracted 3 / 18 sentences
+
+EXTRACTIVE OUTPUT:
+  1. okey, jadi umur Sabun Masara, macam mana dengan penerbuan syarikat baru kita di Ampang Kuala Lumpur ini dapat meningkatkan saham syarikat kita?
+  2. okey, berdasarkan research yang kami telah lakukan di Ampang Kuala Lumpur, dengan merge ataupun adventure ataupun kerjasama dengan syarikat-syarikat Induk di Kuala Lumpur dengan merge ataupun venture ataupun kerjasama dengan syarikat-syarikat induk di Kuala Lumpur yang lain, kita dapat menarik stakeholder dan juga shareholder daripada syarikat-syarikat lain untuk membantu kita meningkatkan saham yang ada.
+  3. Saya telah mencadangkan bahawa penubuhan cawangan baru di Ampang Kuala Lumpur dibuka kerana unit kami mendapati bahawa dengan penubuhan cawangan baru di Kuala Lumpur ini ia dapat menarik pelabur-pelabur asing dan juga dalam negara serta syarikat-syarikat yang besar untuk bergabung dengan syarikat kita dalam menjana pendapatan pada tahun-tahun akan datang.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Dia menulis dalam "Projek Pembangunan" bahawa kita dapat menarik pelabur asing dan juga dalam negara serta syarikat besar untuk bergabung dengan syarikat kita dalam menjana pendapatan pada tahun-tahun mendatang
+
+────────────────────────────────────────────────────────────
+METHOD: ELECTRA
+────────────────────────────────────────────────────────────
+Extracted 3 / 18 sentences
+
+EXTRACTIVE OUTPUT:
+  1. Okey, jadi di sini berapa banyak mesyuarat yang telah kita usulkan dalam mesyuarat iaitu pertama cadangan untuk membuka cawangan di lokasi Ampang di Kuala Lumpur dan yang kedua bajet peruntukan yang telah kita cadangkan iaitu RM5 juta dan seterusnya operasi telah mencadangkan berkenaan beberapa pemantau di sana dan akhir sekali pengusaha sumber manusia telah mencadangkan untuk melantik kumpulan unit khas untuk projek pembangunan di cawangan baru okey jadi saya serahkan balik kepada pengurus mesyuarat Terima kasih Siti Usha Seterusnya kita teruskan dengan agenda utama kita iaitu penumpuan cawangan baru IOI di Kuala Lumpur Untuk agenda kali ini, saya serahkan kepada pengurus pemasaran untuk menerangkan dengan lebih lanjut Terima kasih kepada pengurusi majlis.
+  2. Farina Adina, pada mesyuarat kali ini ialah penubuhan cawangan I.O.I. bahagian terbaru di Kuala Lumpur Sebelum kita meneruskan agenda ini, saya serahkan kepada S. Pilsa untuk membentangkan mesyuarat yang sebelumnya okey, baik, terima kasih Berikutan kepada masyarakat kita yang telah berlangsung baru-baru ini Dan kita telah mengusulkan beberapa cadangan berkenaan cawangan baru kita yang dilokasi di Ampang, Kuala Lumpur.
+  3. Di sekitar kawasan situ terdapat juga syarikat-syarikat yang lebih kurang macam syarikat kita tetapi kita mempunyai tarikan dan keimitan sendiri serta kita juga telah bergabung dengan beberapa syarikat yang lain.
+
+ABSTRACTIVE SUMMARY:
+  Ringkasan AI
+•	Okey adalah mesyuarat bulanan yang telah diadakan di Kuala Lumpur dan Ampang, Kuala Lumpur
+•	Ia berlangsung pada 20 dan 25 Mei 2012
+•	Mesyuarat ini telah dicadangkan dan dicadangkan di sini - jadi saya telah serahkan kepada pengurus mesyuarat Terima kasih Siti Usha Seterusnya kami teruskan dengan agenda utama kami iaitu penumpuan cawangan baru IOI di Kuala Lumpur
+
+============================================================
+QUICK COMPARISON
+============================================================
+Method       Extracted    Abstractive Length  
+────────────────────────────────────────────
+textrank     3            31 words
+lsa          3            32 words
+electra      3            62 words
