@@ -139,7 +139,7 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3):
     }
 
 
-def extractive_electra(text, ratio=0.10, min_sentences=3, max_sentences=8):
+def extractive_electra(text, ratio=0.20, min_sentences=3, max_sentences=8):
     """
     Extractive summarization using Malaya ELECTRA Encoder.
     Deep semantic method — Malay-specific embeddings, best context understanding.
@@ -164,7 +164,7 @@ def extractive_electra(text, ratio=0.10, min_sentences=3, max_sentences=8):
 
     # Load ELECTRA model
     transformer_model = malaya.transformer.huggingface(
-        model='mesolitica/electra-small-generator-bahasa-cased',
+        model='mesolitica/electra-base-generator-bahasa-cased',
         attn_implementation="eager"
     )
     extractive_model = malaya.summarization.extractive.encoder(transformer_model)

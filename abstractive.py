@@ -118,7 +118,7 @@ def _load_model(model_name):
 
 
 def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
-                          max_length=512, min_length=120, length_penalty=2.0, 
+                          max_length=512, min_length=30, length_penalty=2.0,
                           postprocess=True, bullet_points=True,
                           # Beam search params
                           num_beams=5, no_repeat_ngram_size=3,
