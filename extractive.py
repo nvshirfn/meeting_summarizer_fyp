@@ -210,21 +210,52 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8,
     print(f"  [ELECTRA] After dedup:         {eligible_count}")
     print(f"  [ELECTRA] Extracting:          {sentences_to_extract} sentences (ratio={ratio})")
 
-    # Load ELECTRA model
+    MALAYA_MODELS = {'mesolitica/electra-base-generator-bahasa-cased',
+                     'mesolitica/electra-small-generator-bahasa-cased'}
+
     print(f"  [ELECTRA] Loading model: {model}")
-    transformer_model = malaya.transformer.huggingface(
-        model=model,
-        attn_implementation="eager",
-        force_check=False
-    )
-    extractive_model = malaya.summarization.extractive.encoder(transformer_model)
 
-    # Extract summary from deduplicated, filtered text
-    summary_data = extractive_model.sentence_level(deduped_text, top_k=sentences_to_extract)
+    if model in MALAYA_MODELS:
+        # Use Malaya's wrapper for known-supported generator models
+        transformer_model = malaya.transformer.huggingface(
+            model=model,
+            attn_implementation="eager"
+        )
+        extractive_model = malaya.summarization.extractive.encoder(transformer_model)
+        summary_data = extractive_model.sentence_level(deduped_text, top_k=sentences_to_extract)
+        combined = summary_data['summary']
+        sentences = tokenize_sentences(combined)
+    else:
+        # Direct HuggingFace path for models not supported by Malaya's wrapper
+        # (e.g. discriminator variant). No silent fallback — errors surface fully.
+        import torch
+        from transformers import AutoTokenizer, AutoModel
+        from sklearn.metrics.pairwise import cosine_similarity as cos_sim
 
-    # Parse individual sentences from the combined summary
-    combined = summary_data['summary']
-    sentences = tokenize_sentences(combined)
+        tokenizer = AutoTokenizer.from_pretrained(model)
+        hf_model = AutoModel.from_pretrained(model)
+        hf_model.eval()
+
+        input_sentences = tokenize_sentences(deduped_text)
+        if not input_sentences:
+            input_sentences = [deduped_text]
+
+        # Get mean-pooled embeddings for each sentence
+        def embed(sents):
+            enc = tokenizer(sents, padding=True, truncation=True,
+                            max_length=512, return_tensors="pt")
+            with torch.no_grad():
+                out = hf_model(**enc)
+            return out.last_hidden_state.mean(dim=1).numpy()
+
+        embeddings = embed(input_sentences)
+        sim_matrix = cos_sim(embeddings)
+        scores = sim_matrix.sum(axis=1)
+
+        ranked_idx = scores.argsort()[::-1]
+        top_idx = sorted(ranked_idx[:sentences_to_extract])
+        sentences = [input_sentences[i] for i in top_idx]
+        combined = " ".join(sentences)
 
     return {
         "method": "electra",
