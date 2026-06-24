@@ -139,17 +139,17 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3):
     }
 
 
-def extractive_electra(text, ratio=0.20, min_sentences=3, max_sentences=8):
+def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6):
     """
     Extractive summarization using Malaya ELECTRA Encoder.
     Deep semantic method — Malay-specific embeddings, best context understanding.
-    
+
     Args:
         text: Input text to summarize
-        ratio: Fraction of sentences to extract (default 10%)
+        ratio: Fraction of sentences to extract (default 20%)
         min_sentences: Minimum number of sentences to extract
-        max_sentences: Maximum number of sentences to extract (to avoid overwhelming T5)
-    
+        min_words: Minimum word count for a sentence to be eligible for extraction
+
     Returns:
         dict with keys: method, sentences, combined, total_sentences, extracted_count
     """
@@ -157,10 +157,28 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, max_sentences=8):
 
     import malaya
 
-    # Estimate total sentences properly
+    # Tokenize and filter out short low-content sentences
     input_sentences = tokenize_sentences(text)
     total_sentences = len(input_sentences)
-    sentences_to_extract = min(max_sentences, max(min_sentences, int(total_sentences * ratio)))
+    eligible = [s for s in input_sentences if len(s.split()) >= min_words]
+
+    # Deduplicate near-identical sentences (keeps first occurrence)
+    seen = []
+    for s in eligible:
+        normalised = re.sub(r'\s+', ' ', s.strip().lower())
+        is_duplicate = any(
+            sum(w in normalised.split() for w in ref.split()) / max(len(ref.split()), 1) > 0.85
+            for ref in seen
+        )
+        if not is_duplicate:
+            seen.append(normalised)
+    deduped_text = " ".join(
+        s for s in eligible
+        if re.sub(r'\s+', ' ', s.strip().lower()) in seen
+    )
+
+    eligible_count = len(seen)
+    sentences_to_extract = max(min_sentences, int(eligible_count * ratio))
 
     # Load ELECTRA model
     transformer_model = malaya.transformer.huggingface(
@@ -169,8 +187,8 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, max_sentences=8):
     )
     extractive_model = malaya.summarization.extractive.encoder(transformer_model)
 
-    # Extract summary
-    summary_data = extractive_model.sentence_level(text, top_k=sentences_to_extract)
+    # Extract summary from deduplicated, filtered text
+    summary_data = extractive_model.sentence_level(deduped_text, top_k=sentences_to_extract)
 
     # Parse individual sentences from the combined summary
     combined = summary_data['summary']
