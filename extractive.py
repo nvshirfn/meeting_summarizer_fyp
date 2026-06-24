@@ -214,7 +214,8 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8,
     print(f"  [ELECTRA] Loading model: {model}")
     transformer_model = malaya.transformer.huggingface(
         model=model,
-        attn_implementation="eager"
+        attn_implementation="eager",
+        force_check=False
     )
     extractive_model = malaya.summarization.extractive.encoder(transformer_model)
 
