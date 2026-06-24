@@ -140,7 +140,7 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3):
     }
 
 
-def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6):
+def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8):
     """
     Extractive summarization using Malaya ELECTRA Encoder.
     Deep semantic method — Malay-specific embeddings, best context understanding.
@@ -162,13 +162,35 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6):
     input_sentences = tokenize_sentences(text)
     total_sentences = len(input_sentences)
     eligible = [s for s in input_sentences if len(s.split()) >= min_words]
+    after_length = len(eligible)
 
-    # Deduplicate near-identical sentences (keeps first occurrence)
+    # Remove stopword-heavy sentences (content word density < 40%)
+    try:
+        from malaya.text.function import get_stopwords
+        stopwords = set(get_stopwords())
+    except Exception:
+        stopwords = {"yang", "dan", "untuk", "di", "ke", "dari", "ini", "itu", "dengan",
+                     "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia",
+                     "dalam", "akan", "tidak", "tak", "juga", "sudah", "atau", "oleh"}
+    def content_density(s):
+        words = s.lower().split()
+        if not words:
+            return 0
+        content = [w for w in words if w not in stopwords and len(w) > 2]
+        return len(content) / len(words)
+    eligible = [s for s in eligible if content_density(s) >= 0.4]
+    after_content = len(eligible)
+
+    # Deduplicate near-identical sentences — bidirectional check (keeps first occurrence)
     seen = []
     for s in eligible:
         normalised = re.sub(r'\s+', ' ', s.strip().lower())
+        norm_words = normalised.split()
         is_duplicate = any(
-            sum(w in normalised.split() for w in ref.split()) / max(len(ref.split()), 1) > 0.85
+            max(
+                sum(w in norm_words for w in ref.split()) / max(len(ref.split()), 1),
+                sum(w in ref.split() for w in norm_words) / max(len(norm_words), 1)
+            ) > 0.75
             for ref in seen
         )
         if not is_duplicate:
@@ -180,6 +202,12 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6):
 
     eligible_count = len(seen)
     sentences_to_extract = max(min_sentences, int(eligible_count * ratio))
+
+    print(f"  [ELECTRA] Total sentences:      {total_sentences}")
+    print(f"  [ELECTRA] After length filter: {after_length} (min_words={min_words})")
+    print(f"  [ELECTRA] After content filter:{after_content}")
+    print(f"  [ELECTRA] After dedup:         {eligible_count}")
+    print(f"  [ELECTRA] Extracting:          {sentences_to_extract} sentences (ratio={ratio})")
 
     # Load ELECTRA model
     transformer_model = malaya.transformer.huggingface(
