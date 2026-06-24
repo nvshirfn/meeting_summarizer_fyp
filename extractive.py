@@ -3,6 +3,7 @@ Extractive Summarization Module for Malay Text
 Supports 3 methods: TextRank, LSA, and ELECTRA
 """
 
+import re
 import numpy as np
 
 
