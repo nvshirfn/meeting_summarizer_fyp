@@ -140,7 +140,8 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3):
     }
 
 
-def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8):
+def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8,
+                       model='mesolitica/electra-base-generator-bahasa-cased'):
     """
     Extractive summarization using Malaya ELECTRA Encoder.
     Deep semantic method — Malay-specific embeddings, best context understanding.
@@ -210,8 +211,9 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8):
     print(f"  [ELECTRA] Extracting:          {sentences_to_extract} sentences (ratio={ratio})")
 
     # Load ELECTRA model
+    print(f"  [ELECTRA] Loading model: {model}")
     transformer_model = malaya.transformer.huggingface(
-        model='mesolitica/electra-base-generator-bahasa-cased',
+        model=model,
         attn_implementation="eager"
     )
     extractive_model = malaya.summarization.extractive.encoder(transformer_model)
@@ -266,7 +268,9 @@ if __name__ == "__main__":
     parser.add_argument("--input", required=True, help="Path to input text file")
     parser.add_argument("--method", choices=["textrank", "lsa", "electra"], default="textrank",
                         help="Extractive method to use")
-    
+    parser.add_argument("--model", default=None,
+                        help="Override ELECTRA model (e.g. mesolitica/electra-base-discriminator-bahasa-cased)")
+
     args = parser.parse_args()
 
     with open(args.input, "r", encoding="utf-8") as f:
@@ -276,7 +280,11 @@ if __name__ == "__main__":
     print(f"  EXTRACTIVE SUMMARIZATION — {args.method.upper()}")
     print(f"{'='*60}\n")
 
-    result = run_extractive(text, method=args.method)
+    kwargs = {}
+    if args.model and args.method == "electra":
+        kwargs["model"] = args.model
+
+    result = run_extractive(text, method=args.method, **kwargs)
 
     print(f"Total sentences: {result['total_sentences']}")
     print(f"Extracted: {result['extracted_count']} sentences\n")
