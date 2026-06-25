@@ -45,7 +45,7 @@ def tokenize_sentences(text):
     return sentences
 
 
-def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=12, min_words=4):
+def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=4):
     """
     Extractive summarization using TFIDF + NetworkX (TextRank) + MMR re-ranking, tuned for Malay.
     """
@@ -101,7 +101,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=12, min
             pagerank_scores = np.array([scores[i] for i in range(len(sentences))])
 
             # 3. MMR re-ranking: balance relevance (PageRank) with diversity
-            lambda_mmr = 0.7
+            lambda_mmr = 0.85
             selected_idx = []
             remaining_idx = list(range(len(sentences)))
 
