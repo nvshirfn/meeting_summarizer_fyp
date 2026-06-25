@@ -46,7 +46,7 @@ def tokenize_sentences(text):
 
 
 def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=9,
-                        content_density_threshold=0.30, centroid_threshold=0.07, n_sections=3):
+                        content_density_threshold=0.30, n_sections=3):
     """
     Extractive summarization using TFIDF + NetworkX (TextRank) + MMR re-ranking, tuned for Malay.
     """
@@ -110,22 +110,30 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
         try:
             X = vectorizer.fit_transform(sentences)
 
-            # 4. Centroid similarity filter — drop sentences topically distant from the document
-            centroid = np.asarray(X.mean(axis=0))
-            centroid_sims = cosine_similarity(X, centroid).flatten()
-            on_topic = centroid_sims >= centroid_threshold
-            if on_topic.sum() >= min_sentences:
-                sentences = [s for s, k in zip(sentences, on_topic) if k]
-                original_indices = [idx for idx, k in zip(original_indices, on_topic) if k]
-                X = X[on_topic]
-
-            # PageRank scores
+            # 4. PageRank scores
             similarity_matrix = cosine_similarity(X)
             nx_graph = nx.from_numpy_array(similarity_matrix)
             scores = nx.pagerank(nx_graph)
             pagerank_scores = np.array([scores[i] for i in range(len(sentences))])
 
-            # 5. Section-based MMR — guarantee coverage across document thirds
+            # 5. Graph-coherence filter — drop sentences poorly connected to the document body.
+            #    Average inter-sentence similarity captures true semantic isolation better than
+            #    centroid distance: off-topic segments share common words with the centroid but
+            #    have low pairwise similarity to the main content sentences.
+            n = len(sentences)
+            if n > min_sentences:
+                diag = np.diag(similarity_matrix)
+                avg_inter = (similarity_matrix.sum(axis=1) - diag) / max(n - 1, 1)
+                cutoff = avg_inter.mean() - avg_inter.std()
+                coherent = avg_inter >= max(cutoff, 1e-6)
+                if coherent.sum() >= min_sentences:
+                    keep = np.where(coherent)[0]
+                    sentences = [sentences[i] for i in keep]
+                    original_indices = [original_indices[i] for i in keep]
+                    similarity_matrix = similarity_matrix[np.ix_(keep, keep)]
+                    pagerank_scores = pagerank_scores[keep]
+
+            # 6. Section-based MMR — guarantee coverage across document thirds
             lambda_mmr = 0.85
             section_size = total_sentences / n_sections
             sentence_sections = [
