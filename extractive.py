@@ -45,8 +45,8 @@ def tokenize_sentences(text):
     return sentences
 
 
-def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=7,
-                        centroid_threshold=0.04, n_sections=3):
+def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=9,
+                        content_density_threshold=0.30, centroid_threshold=0.04, n_sections=3):
     """
     Extractive summarization using TFIDF + NetworkX (TextRank) + MMR re-ranking, tuned for Malay.
     """
@@ -59,6 +59,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
     all_sentences = tokenize_sentences(text)
     total_sentences = len(all_sentences)
 
+    # Load stopwords early — needed for content density filter and TF-IDF
     try:
         from malaya.text.function import get_stopwords
         stopwords = set(get_stopwords())
@@ -70,7 +71,16 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
     # 1. Minimum word filter — preserve original sentence positions for section tracking
     indexed = [(i, s) for i, s in enumerate(all_sentences) if len(s.split()) >= min_words]
 
-    # 2. Deduplication — bidirectional overlap check
+    # 2. Content density filter — drop sentences with too few content words (catches filler/lyrics)
+    def _content_density(s):
+        words = re.sub(r'[^\w\s]', '', s.lower()).split()
+        if not words:
+            return 0.0
+        return sum(1 for w in words if w not in stopwords) / len(words)
+
+    indexed = [(i, s) for i, s in indexed if _content_density(s) >= content_density_threshold]
+
+    # 3. Deduplication — bidirectional overlap check (runs after density filter to reduce cost)
     seen_norms = []
     deduped_indexed = []
     for i, s in indexed:
@@ -99,7 +109,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
         try:
             X = vectorizer.fit_transform(sentences)
 
-            # 3. Centroid similarity filter — drop sentences topically distant from the document
+            # 4. Centroid similarity filter — drop sentences topically distant from the document
             centroid = np.asarray(X.mean(axis=0))
             centroid_sims = cosine_similarity(X, centroid).flatten()
             on_topic = centroid_sims >= centroid_threshold
@@ -115,7 +125,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
             scores = nx.pagerank(nx_graph)
             pagerank_scores = np.array([scores[i] for i in range(len(sentences))])
 
-            # 4. Section-based MMR — guarantee coverage across document thirds
+            # 5. Section-based MMR — guarantee coverage across document thirds
             lambda_mmr = 0.85
             section_size = total_sentences / n_sections
             sentence_sections = [
