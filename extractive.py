@@ -45,7 +45,7 @@ def tokenize_sentences(text):
     return sentences
 
 
-def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=6):
+def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=7):
     """
     Extractive summarization using TFIDF + NetworkX (TextRank) + MMR re-ranking, tuned for Malay.
     """
@@ -58,7 +58,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
     all_sentences = tokenize_sentences(text)
     total_sentences = len(all_sentences)
 
-    # Load stopwords early — needed for both content filter and TF-IDF
+    # Load stopwords for TF-IDF
     try:
         from malaya.text.function import get_stopwords
         stopwords = set(get_stopwords())
@@ -67,15 +67,8 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
                      "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia",
                      "dalam", "akan", "tidak", "tak", "juga", "sudah", "atau", "oleh"}
 
-    def content_ratio(s):
-        words = s.lower().split()
-        if not words:
-            return 0
-        content = [w for w in words if w not in stopwords and len(w) > 2]
-        return len(content) / len(words)
-
-    # 1. Minimum word filter + content-word ratio filter
-    sentences = [s for s in all_sentences if len(s.split()) >= min_words and content_ratio(s) >= 0.3]
+    # 1. Minimum word filter
+    sentences = [s for s in all_sentences if len(s.split()) >= min_words]
 
     # 2. Deduplication — bidirectional overlap check (ported from ELECTRA)
     seen = []
