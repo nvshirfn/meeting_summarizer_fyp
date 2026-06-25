@@ -100,7 +100,8 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
     original_indices = [i for i, _ in deduped_indexed]
     sentences = [s for _, s in deduped_indexed]
 
-    sentences_to_extract = min(max_sentences, max(min_sentences, int(len(sentences) * ratio)))
+    # Base target on original document length so pre-filters don't shrink output count
+    sentences_to_extract = min(max_sentences, max(min_sentences, int(total_sentences * ratio)))
 
     if len(sentences) <= sentences_to_extract:
         top_sentences = sentences
@@ -117,7 +118,6 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
                 sentences = [s for s, k in zip(sentences, on_topic) if k]
                 original_indices = [idx for idx, k in zip(original_indices, on_topic) if k]
                 X = X[on_topic]
-                sentences_to_extract = min(max_sentences, max(min_sentences, int(len(sentences) * ratio)))
 
             # PageRank scores
             similarity_matrix = cosine_similarity(X)
