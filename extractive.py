@@ -45,7 +45,8 @@ def tokenize_sentences(text):
     return sentences
 
 
-def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=7):
+def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=7,
+                        centroid_threshold=0.04, n_sections=3):
     """
     Extractive summarization using TFIDF + NetworkX (TextRank) + MMR re-ranking, tuned for Malay.
     """
@@ -58,7 +59,6 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
     all_sentences = tokenize_sentences(text)
     total_sentences = len(all_sentences)
 
-    # Load stopwords for TF-IDF
     try:
         from malaya.text.function import get_stopwords
         stopwords = set(get_stopwords())
@@ -67,12 +67,13 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
                      "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia",
                      "dalam", "akan", "tidak", "tak", "juga", "sudah", "atau", "oleh"}
 
-    # 1. Minimum word filter
-    sentences = [s for s in all_sentences if len(s.split()) >= min_words]
+    # 1. Minimum word filter — preserve original sentence positions for section tracking
+    indexed = [(i, s) for i, s in enumerate(all_sentences) if len(s.split()) >= min_words]
 
-    # 2. Deduplication — bidirectional overlap check (ported from ELECTRA)
-    seen = []
-    for s in sentences:
+    # 2. Deduplication — bidirectional overlap check
+    seen_norms = []
+    deduped_indexed = []
+    for i, s in indexed:
         normalised = re.sub(r'\s+', ' ', s.strip().lower())
         norm_words = normalised.split()
         is_duplicate = any(
@@ -80,11 +81,14 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
                 sum(w in norm_words for w in ref.split()) / max(len(ref.split()), 1),
                 sum(w in ref.split() for w in norm_words) / max(len(norm_words), 1)
             ) > 0.75
-            for ref in seen
+            for ref in seen_norms
         )
         if not is_duplicate:
-            seen.append(normalised)
-    sentences = [s for s in sentences if re.sub(r'\s+', ' ', s.strip().lower()) in seen]
+            seen_norms.append(normalised)
+            deduped_indexed.append((i, s))
+
+    original_indices = [i for i, _ in deduped_indexed]
+    sentences = [s for _, s in deduped_indexed]
 
     sentences_to_extract = min(max_sentences, max(min_sentences, int(len(sentences) * ratio)))
 
@@ -94,26 +98,59 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
         vectorizer = TfidfVectorizer(stop_words=list(stopwords))
         try:
             X = vectorizer.fit_transform(sentences)
-            similarity_matrix = cosine_similarity(X)
+
+            # 3. Centroid similarity filter — drop sentences topically distant from the document
+            centroid = np.asarray(X.mean(axis=0))
+            centroid_sims = cosine_similarity(X, centroid).flatten()
+            on_topic = centroid_sims >= centroid_threshold
+            if on_topic.sum() >= min_sentences:
+                sentences = [s for s, k in zip(sentences, on_topic) if k]
+                original_indices = [idx for idx, k in zip(original_indices, on_topic) if k]
+                X = X[on_topic]
+                sentences_to_extract = min(max_sentences, max(min_sentences, int(len(sentences) * ratio)))
 
             # PageRank scores
+            similarity_matrix = cosine_similarity(X)
             nx_graph = nx.from_numpy_array(similarity_matrix)
             scores = nx.pagerank(nx_graph)
             pagerank_scores = np.array([scores[i] for i in range(len(sentences))])
 
-            # 3. MMR re-ranking: balance relevance (PageRank) with diversity
+            # 4. Section-based MMR — guarantee coverage across document thirds
             lambda_mmr = 0.85
+            section_size = total_sentences / n_sections
+            sentence_sections = [
+                min(int(idx / section_size), n_sections - 1) for idx in original_indices
+            ]
+            min_per_section = max(1, sentences_to_extract // (n_sections + 1))
+
             selected_idx = []
             remaining_idx = list(range(len(sentences)))
 
-            for _ in range(sentences_to_extract):
-                if not remaining_idx:
-                    break
+            # First pass: enforce minimum from each section using MMR
+            for section in range(n_sections):
+                section_cands = [i for i in remaining_idx if sentence_sections[i] == section]
+                picks = 0
+                while picks < min_per_section and section_cands:
+                    if not selected_idx:
+                        best = max(section_cands, key=lambda i: pagerank_scores[i])
+                    else:
+                        best = max(
+                            section_cands,
+                            key=lambda i: (
+                                lambda_mmr * pagerank_scores[i]
+                                - (1 - lambda_mmr) * max(similarity_matrix[i][j] for j in selected_idx)
+                            )
+                        )
+                    selected_idx.append(best)
+                    remaining_idx.remove(best)
+                    section_cands.remove(best)
+                    picks += 1
+
+            # Second pass: fill remaining slots with open MMR
+            while len(selected_idx) < sentences_to_extract and remaining_idx:
                 if not selected_idx:
-                    # First pick: highest PageRank
                     best = max(remaining_idx, key=lambda i: pagerank_scores[i])
                 else:
-                    # MMR: relevance minus max similarity to already-selected
                     best = max(
                         remaining_idx,
                         key=lambda i: (
@@ -124,7 +161,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
                 selected_idx.append(best)
                 remaining_idx.remove(best)
 
-            # Restore original order
+            # Restore original document order
             top_sentences = [sentences[i] for i in sorted(selected_idx)]
 
         except Exception:
