@@ -134,7 +134,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
                     pagerank_scores = pagerank_scores[keep]
 
             # 6. Section-based MMR — guarantee coverage across document thirds
-            lambda_mmr = 0.75
+            lambda_mmr = 0.85
             section_size = total_sentences / n_sections
             sentence_sections = [
                 min(int(idx / section_size), n_sections - 1) for idx in original_indices
