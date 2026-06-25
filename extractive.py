@@ -45,42 +45,87 @@ def tokenize_sentences(text):
     return sentences
 
 
-def extractive_textrank(text, ratio=0.20, min_sentences=3):
+def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=12, min_words=4):
     """
-    Extractive summarization using TFIDF + NetworkX (TextRank) tuned for Malay.
-    Replaces sumy with a custom TextRank utilizing Malay stopwords.
+    Extractive summarization using TFIDF + NetworkX (TextRank) + MMR re-ranking, tuned for Malay.
     """
     _apply_patches()
     import networkx as nx
+    import numpy as np
     from sklearn.feature_extraction.text import TfidfVectorizer
     from sklearn.metrics.pairwise import cosine_similarity
-    
-    sentences = tokenize_sentences(text)
-    
-    total_sentences = len(sentences)
-    sentences_to_extract = max(min_sentences, int(total_sentences * ratio))
-    
-    if total_sentences <= sentences_to_extract:
+
+    all_sentences = tokenize_sentences(text)
+    total_sentences = len(all_sentences)
+
+    # 1. Minimum word filter
+    sentences = [s for s in all_sentences if len(s.split()) >= min_words]
+
+    # 2. Deduplication — bidirectional overlap check (ported from ELECTRA)
+    seen = []
+    for s in sentences:
+        normalised = re.sub(r'\s+', ' ', s.strip().lower())
+        norm_words = normalised.split()
+        is_duplicate = any(
+            max(
+                sum(w in norm_words for w in ref.split()) / max(len(ref.split()), 1),
+                sum(w in ref.split() for w in norm_words) / max(len(norm_words), 1)
+            ) > 0.75
+            for ref in seen
+        )
+        if not is_duplicate:
+            seen.append(normalised)
+    sentences = [s for s in sentences if re.sub(r'\s+', ' ', s.strip().lower()) in seen]
+
+    sentences_to_extract = min(max_sentences, max(min_sentences, int(len(sentences) * ratio)))
+
+    if len(sentences) <= sentences_to_extract:
         top_sentences = sentences
     else:
         try:
             from malaya.text.function import get_stopwords
             stopwords = get_stopwords()
-        except:
-            stopwords = ["yang", "dan", "untuk", "di", "ke", "dari", "ini", "itu", "dengan", "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia", "dalam", "akan"]
-            
+        except Exception:
+            stopwords = ["yang", "dan", "untuk", "di", "ke", "dari", "ini", "itu", "dengan",
+                         "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia",
+                         "dalam", "akan"]
+
         vectorizer = TfidfVectorizer(stop_words=stopwords)
         try:
             X = vectorizer.fit_transform(sentences)
             similarity_matrix = cosine_similarity(X)
-            
+
+            # PageRank scores
             nx_graph = nx.from_numpy_array(similarity_matrix)
             scores = nx.pagerank(nx_graph)
-            
-            ranked_sentences = sorted(((scores[i], s) for i, s in enumerate(sentences)), reverse=True)
-            top_sentences = [s for _, s in ranked_sentences[:sentences_to_extract]]
-            
-            top_sentences = sorted(top_sentences, key=lambda x: sentences.index(x))
+            pagerank_scores = np.array([scores[i] for i in range(len(sentences))])
+
+            # 3. MMR re-ranking: balance relevance (PageRank) with diversity
+            lambda_mmr = 0.7
+            selected_idx = []
+            remaining_idx = list(range(len(sentences)))
+
+            for _ in range(sentences_to_extract):
+                if not remaining_idx:
+                    break
+                if not selected_idx:
+                    # First pick: highest PageRank
+                    best = max(remaining_idx, key=lambda i: pagerank_scores[i])
+                else:
+                    # MMR: relevance minus max similarity to already-selected
+                    best = max(
+                        remaining_idx,
+                        key=lambda i: (
+                            lambda_mmr * pagerank_scores[i]
+                            - (1 - lambda_mmr) * max(similarity_matrix[i][j] for j in selected_idx)
+                        )
+                    )
+                selected_idx.append(best)
+                remaining_idx.remove(best)
+
+            # Restore original order
+            top_sentences = [sentences[i] for i in sorted(selected_idx)]
+
         except Exception:
             top_sentences = sentences[:sentences_to_extract]
 
