@@ -35,7 +35,7 @@ pipe = pipeline(
 
 # 4. Transcribe
 # Replace 'culture_shock.mp3' with your actual file path
-audio_path = "Audio_Sample/culture_shock.mp3" 
+audio_path = "Audio Trimmed/culture_shock.mp3" 
 
 print("Starting transcription...")
 result = pipe(
@@ -49,7 +49,7 @@ print("\n--- TRANSCRIPT ---\n")
 print(result["text"])
 
 # Save to a file in the same folder
-with open("Output_Sample/culture_shock.txt", "w", encoding="utf-8") as f:
+with open("stt_transcription_trimmed/culture_shock.txt", "w", encoding="utf-8") as f:
     f.write(result["text"])
 
 print("\nDone! Transcript saved to 'culture_shock.txt'.")

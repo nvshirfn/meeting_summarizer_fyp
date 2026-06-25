@@ -78,7 +78,7 @@ def extractive_textrank(text, ratio=0.20, min_sentences=3):
             scores = nx.pagerank(nx_graph)
             
             ranked_sentences = sorted(((scores[i], s) for i, s in enumerate(sentences)), reverse=True)
-            top_sentences = [s for score, s in ranked_sentences[:sentences_to_extract]]
+            top_sentences = [s for _, s in ranked_sentences[:sentences_to_extract]]
             
             top_sentences = sorted(top_sentences, key=lambda x: sentences.index(x))
         except Exception:
@@ -140,7 +140,7 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3):
     }
 
 
-def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8,
+def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6,
                        model='mesolitica/electra-base-generator-bahasa-cased'):
     """
     Extractive summarization using Malaya ELECTRA Encoder.
@@ -165,23 +165,6 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8,
     eligible = [s for s in input_sentences if len(s.split()) >= min_words]
     after_length = len(eligible)
 
-    # Remove stopword-heavy sentences (content word density < 40%)
-    try:
-        from malaya.text.function import get_stopwords
-        stopwords = set(get_stopwords())
-    except Exception:
-        stopwords = {"yang", "dan", "untuk", "di", "ke", "dari", "ini", "itu", "dengan",
-                     "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia",
-                     "dalam", "akan", "tidak", "tak", "juga", "sudah", "atau", "oleh"}
-    def content_density(s):
-        words = s.lower().split()
-        if not words:
-            return 0
-        content = [w for w in words if w not in stopwords and len(w) > 2]
-        return len(content) / len(words)
-    eligible = [s for s in eligible if content_density(s) >= 0.4]
-    after_content = len(eligible)
-
     # Deduplicate near-identical sentences — bidirectional check (keeps first occurrence)
     seen = []
     for s in eligible:
@@ -204,9 +187,8 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=8,
     eligible_count = len(seen)
     sentences_to_extract = max(min_sentences, int(eligible_count * ratio))
 
-    print(f"  [ELECTRA] Total sentences:      {total_sentences}")
+    print(f"  [ELECTRA] Total sentences:     {total_sentences}")
     print(f"  [ELECTRA] After length filter: {after_length} (min_words={min_words})")
-    print(f"  [ELECTRA] After content filter:{after_content}")
     print(f"  [ELECTRA] After dedup:         {eligible_count}")
     print(f"  [ELECTRA] Extracting:          {sentences_to_extract} sentences (ratio={ratio})")
 
