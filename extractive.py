@@ -204,7 +204,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
     }
 
 
-def extractive_lsa(text, ratio=0.20, min_sentences=3):
+def extractive_lsa(text, ratio=0.20, min_sentences=3, min_words=8):
     """
     Extractive summarization using Malaya's unsupervised SKLearn interface (LSA).
     Native Malay processing, replaces sumy LSA.
@@ -214,11 +214,15 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3):
     from sklearn.decomposition import TruncatedSVD
     from sklearn.feature_extraction.text import TfidfVectorizer
 
-    sentences = tokenize_sentences(text)
-    total_sentences = len(sentences)
+    all_sentences = tokenize_sentences(text)
+    total_sentences = len(all_sentences)
+
+    # Minimum word filter — applied before LSA so the model scores a clean candidate pool
+    sentences = [s for s in all_sentences if len(s.split()) >= min_words]
+
     sentences_to_extract = max(min_sentences, int(total_sentences * ratio))
 
-    if total_sentences <= sentences_to_extract:
+    if len(sentences) <= sentences_to_extract:
         top_sentences = sentences
     else:
         try:
