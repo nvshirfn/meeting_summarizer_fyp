@@ -204,7 +204,7 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
     }
 
 
-def extractive_lsa(text, ratio=0.20, min_sentences=3, min_words=8, max_words=65):
+def extractive_lsa(text, ratio=0.20, min_sentences=3, min_words=8, max_words=65, max_sentences=20):
     """
     Extractive summarization using Malaya's unsupervised SKLearn interface (LSA).
     Native Malay processing, replaces sumy LSA.
@@ -222,6 +222,7 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3, min_words=8, max_words=65)
     sentences = [s for s in all_sentences if min_words <= len(s.split()) <= max_words]
 
     sentences_to_extract = max(min_sentences, int(total_sentences * ratio))
+    sentences_to_extract = min(sentences_to_extract, max_sentences)
 
     if len(sentences) <= sentences_to_extract:
         top_sentences = sentences
