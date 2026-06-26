@@ -46,7 +46,7 @@ def tokenize_sentences(text):
 
 
 def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=9,
-                        content_density_threshold=0.30, n_sections=3):
+                        max_words=70, content_density_threshold=0.30, n_sections=3):
     """
     Extractive summarization using TFIDF + NetworkX (TextRank) + MMR re-ranking, tuned for Malay.
     """
@@ -133,7 +133,13 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
                     similarity_matrix = similarity_matrix[np.ix_(keep, keep)]
                     pagerank_scores = pagerank_scores[keep]
 
-            # 6. Section-based MMR — guarantee coverage across document thirds
+            # 6. Length penalty — demote run-on sentences (> max_words words)
+            word_counts = np.array([len(s.split()) for s in sentences])
+            long_mask = word_counts > max_words
+            if long_mask.any():
+                pagerank_scores = pagerank_scores * np.where(long_mask, 0.25, 1.0)
+
+            # 7. Section-based MMR — guarantee coverage across document thirds
             lambda_mmr = 0.85
             section_size = total_sentences / n_sections
             sentence_sections = [
