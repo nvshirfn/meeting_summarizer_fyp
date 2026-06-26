@@ -46,7 +46,7 @@ def tokenize_sentences(text):
 
 
 def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min_words=9,
-                        max_words=70, content_density_threshold=0.30, n_sections=3):
+                        max_words=55, content_density_threshold=0.30, n_sections=3):
     """
     Extractive summarization using TFIDF + NetworkX (TextRank) + MMR re-ranking, tuned for Malay.
     """
