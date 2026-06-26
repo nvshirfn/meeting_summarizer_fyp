@@ -19,7 +19,7 @@ from sentiment_analysis import analyze_sentiment
 def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
                  output_dir="summaries", skip_preprocess=False,
                  abs_model=DEFAULT_MODEL_KEY, abs_mode="beam",
-                 postprocess=True, normalization="dictionary"):
+                 postprocess=True, normalization="hybrid"):
     """
     Full summarization pipeline: Preprocess → Extractive → Abstractive → Save Report.
     
@@ -188,7 +188,7 @@ Examples:
                         help="Directory to save output reports (default: summaries)")
     parser.add_argument("--skip-preprocess", action="store_true",
                         help="Skip preprocessing (use if input is already cleaned)")
-    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="dictionary",
+    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="hybrid",
                         help="Normalization strategy for preprocessing (default: dictionary)")
     parser.add_argument("--abs-model", default=DEFAULT_MODEL_KEY,
                         choices=list(AVAILABLE_MODELS.keys()),

@@ -122,7 +122,7 @@ def process():
     sentiment_key  = request.form.get("sentiment_model", "lexicon")
     topic_key      = request.form.get("topic_model", "lda")
     abs_model_key  = request.form.get("abstractive_model", DEFAULT_MODEL_KEY)
-    normalization_key = request.form.get("normalization", "dictionary")
+    normalization_key = request.form.get("normalization", "hybrid")
 
     # Save uploaded file
     filename = uploaded_file.filename
