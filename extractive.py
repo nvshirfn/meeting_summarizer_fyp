@@ -80,7 +80,11 @@ def extractive_textrank(text, ratio=0.12, min_sentences=3, max_sentences=15, min
 
     indexed = [(i, s) for i, s in indexed if _content_density(s) >= content_density_threshold]
 
-    # 3. Deduplication — bidirectional overlap check (runs after density filter to reduce cost)
+    # 3. Question filter — exclude short interview prompts and filler questions (< 20 words)
+    #    Long ?-sentences (≥ 20 words) are kept: they tend to be informative debate challenges
+    indexed = [(i, s) for i, s in indexed if not (s.rstrip().endswith('?') and len(s.split()) < 20)]
+
+    # 4. Deduplication — bidirectional overlap check (runs after density filter to reduce cost)
     seen_norms = []
     deduped_indexed = []
     for i, s in indexed:
