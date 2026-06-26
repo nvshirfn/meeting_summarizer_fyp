@@ -221,6 +221,23 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3, min_words=8, max_words=65,
     # Applied before LSA so the model scores a clean candidate pool
     sentences = [s for s in all_sentences if min_words <= len(s.split()) <= max_words]
 
+    # Deduplicate near-identical sentences — bidirectional word overlap > 0.75
+    seen_norm = []
+    deduped = []
+    for s in sentences:
+        norm = re.sub(r'\s+', ' ', s.strip().lower())
+        nw = norm.split()
+        if not any(
+            max(
+                sum(w in nw for w in ref.split()) / max(len(ref.split()), 1),
+                sum(w in ref.split() for w in nw) / max(len(nw), 1)
+            ) > 0.75
+            for ref in seen_norm
+        ):
+            seen_norm.append(norm)
+            deduped.append(s)
+    sentences = deduped
+
     sentences_to_extract = max(min_sentences, int(total_sentences * ratio))
     sentences_to_extract = min(sentences_to_extract, max_sentences)
 
