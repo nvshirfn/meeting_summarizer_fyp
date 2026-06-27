@@ -250,7 +250,7 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3, min_words=8, max_words=65,
         except:
             stopwords = ["yang", "dan", "untuk", "di", "ke", "dari", "ini", "itu", "dengan", "kepada", "adalah", "pada", "bahawa", "mereka", "kita", "saya", "dia", "dalam", "akan"]
 
-        svd = TruncatedSVD(n_components=max(1, sentences_to_extract // 2))
+        svd = TruncatedSVD(n_components=max(1, sentences_to_extract // 2), random_state=42)
         vectorizer = TfidfVectorizer(stop_words=stopwords)
         try:
             extractive_model = malaya.summarization.extractive.sklearn(svd, vectorizer)
