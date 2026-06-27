@@ -126,7 +126,7 @@ def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
                           # Sampling params
                           top_p=0.92, top_k=0, temperature=0.7,
                           # Postprocess params
-                          n=2, threshold=0.1, reject_similarity=0.85):
+                          n=2, threshold=0.3, reject_similarity=0.85):
     """
     Generate an abstractive summary from the input text using Malaya T5.
 
