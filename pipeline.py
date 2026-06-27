@@ -11,43 +11,37 @@ from datetime import datetime
 
 from preprocess import NORMALIZATION_OPTIONS, preprocess_malay_transcript
 from extractive import run_extractive
-from abstractive import abstractive_summarize, AVAILABLE_MODELS, DEFAULT_MODEL_KEY
+from abstractive import abstractive_summarize
 from topic_modeling import perform_topic_modeling
 from sentiment_analysis import analyze_sentiment
 
 
 def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
                  output_dir="summaries", skip_preprocess=False,
-                 abs_model=DEFAULT_MODEL_KEY, abs_mode="beam",
-                 postprocess=True, normalization="hybrid"):
+                 abs_mode="beam", postprocess=True, normalization="hybrid"):
     """
     Full summarization pipeline: Preprocess → Extractive → Abstractive → Save Report.
-    
+
     Args:
         input_path: Path to the raw input text file
         extractive_method: "textrank", "lsa", or "electra"
         mode: "meeting" for spoken transcripts, "written" for news/articles
         output_dir: Directory to save the output report
         skip_preprocess: If True, skip preprocessing (input is already clean)
-        abs_model: Abstractive model key ("t5-small", "t5-base", "ms-t5-small", "ms-t5-base")
         abs_mode: Decoding strategy ("beam" or "sampling")
         postprocess: If True, use Malaya's built-in ROUGE postprocessing
         normalization: "dictionary", "malaya", or "hybrid"
-    
+
     Returns:
         dict with keys: cleaned_text, extractive_result, abstractive_summary, report_path
     """
-    # ── STEP 0: Load Input ──────────────────────────────────────
-    abs_info = AVAILABLE_MODELS.get(abs_model, {})
-    abs_label = abs_info.get('description', abs_model)
-
     print(f"\n{'='*60}")
     print(f"  MALAY TEXT SUMMARIZATION PIPELINE")
     print(f"{'='*60}")
     print(f"  Input:       {input_path}")
     print(f"  Mode:        {mode}")
     print(f"  Extractive:  {extractive_method.upper()}")
-    print(f"  Abstractive: {abs_model} ({abs_mode})")
+    print(f"  Abstractive: ms-t5-base ({abs_mode})")
     print(f"  Normalize:   {normalization}")
     print(f"  Postprocess: {postprocess}")
     print(f"  Preprocess:  {'Skipped' if skip_preprocess else 'Enabled'}")
@@ -100,12 +94,11 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
     print()
 
     # ── STEP 5: Abstractive Summarization ───────────────────────
-    print(f"[Step 5/5] Abstractive Summarization ({abs_model}, {abs_mode})...")
+    print(f"[Step 5/5] Abstractive Summarization (ms-t5-base, {abs_mode})...")
     print(f"  Rewriting for natural flow and accuracy (this may take a moment)...\n")
 
     abstractive_summary = abstractive_summarize(
         extractive_result['combined'],
-        model=abs_model,
         mode=abs_mode,
         postprocess=postprocess
     )
@@ -128,7 +121,7 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         f.write(f"Input:              {input_path}\n")
         f.write(f"Mode:               {mode}\n")
         f.write(f"Extractive Method:  {extractive_method.upper()}\n")
-        f.write(f"Abstractive Model:  {abs_model} ({abs_mode})\n")
+        f.write(f"Abstractive Model:  ms-t5-base ({abs_mode})\n")
         f.write(f"Normalization:      {NORMALIZATION_OPTIONS.get(normalization, normalization)}\n")
         f.write(f"Postprocess:        {postprocess}\n")
         f.write(f"Generated:          {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -148,7 +141,7 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         for i, sent in enumerate(extractive_result['sentences'], 1):
             f.write(f"{i}. {sent}\n")
 
-        f.write(f"\n--- FINAL ABSTRACTIVE SUMMARY ({abs_model.upper()}, {abs_mode.upper()}) ---\n")
+        f.write(f"\n--- FINAL ABSTRACTIVE SUMMARY (MS-T5-BASE, {abs_mode.upper()}) ---\n")
         f.write(abstractive_summary)
         f.write("\n")
 
@@ -174,7 +167,6 @@ if __name__ == "__main__":
         epilog="""
 Examples:
   python pipeline.py --input stt_transcription/culture_shock.txt --method textrank
-  python pipeline.py --input stt_transcription/culture_shock.txt --method electra --abs-model ms-t5-base
   python pipeline.py --input cleaned_text/news.txt --method lsa --mode written --skip-preprocess
   python pipeline.py --input stt_transcription/culture_shock.txt --method textrank --abs-mode sampling
         """
@@ -190,9 +182,6 @@ Examples:
                         help="Skip preprocessing (use if input is already cleaned)")
     parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="hybrid",
                         help="Normalization strategy for preprocessing (default: dictionary)")
-    parser.add_argument("--abs-model", default=DEFAULT_MODEL_KEY,
-                        choices=list(AVAILABLE_MODELS.keys()),
-                        help=f"Abstractive model (default: {DEFAULT_MODEL_KEY})")
     parser.add_argument("--abs-mode", choices=["beam", "sampling"], default="beam",
                         help="Decoding strategy: 'beam' (accurate) or 'sampling' (natural) (default: beam)")
     parser.add_argument("--no-postprocess", action="store_true",
@@ -210,7 +199,6 @@ Examples:
         mode=args.mode,
         output_dir=args.output_dir,
         skip_preprocess=args.skip_preprocess,
-        abs_model=args.abs_model,
         abs_mode=args.abs_mode,
         postprocess=not args.no_postprocess,
         normalization=args.normalization

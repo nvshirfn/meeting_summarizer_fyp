@@ -1,78 +1,22 @@
 """
 Abstractive Summarization Module for Malay Text
-Supports all 4 Mesolitica T5 models fine-tuned for Bahasa Malaysia summarization.
-Includes beam search and nucleus sampling decoding strategies.
+Uses mesolitica/finetune-summarization-ms-t5-base-standard-bahasa-cased
+(highest ROUGE-L among Malaya T5 models, best overall coherence).
 """
 
 import os
 import warnings
 
-# Suppress noisy warnings
 os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 warnings.filterwarnings("ignore")
 
+MODEL_NAME = "mesolitica/finetune-summarization-ms-t5-base-standard-bahasa-cased"
 
-# ── Available Models ────────────────────────────────────────────
-# Official ROUGE scores from Malaya docs (tested on translated CNN DailyMail)
-AVAILABLE_MODELS = {
-    "t5-small": {
-        "name": "mesolitica/finetune-summarization-t5-small-standard-bahasa-cased",
-        "size_mb": 242,
-        "rouge1": 0.757, "rouge2": 0.497, "rougeL": 0.304,
-        "description": "Fastest. Highest ROUGE-1 (best word overlap)."
-    },
-    "t5-base": {
-        "name": "mesolitica/finetune-summarization-t5-base-standard-bahasa-cased",
-        "size_mb": 892,
-        "rouge1": 0.713, "rouge2": 0.470, "rougeL": 0.367,
-        "description": "Good balance of speed and coherence."
-    },
-    "ms-t5-small": {
-        "name": "mesolitica/finetune-summarization-ms-t5-small-standard-bahasa-cased",
-        "size_mb": 242,
-        "rouge1": 0.743, "rouge2": 0.502, "rougeL": 0.374,
-        "description": "More Malay-specific training. Highest ROUGE-2 (best bigram match)."
-    },
-    "ms-t5-base": {
-        "name": "mesolitica/finetune-summarization-ms-t5-base-standard-bahasa-cased",
-        "size_mb": 892,
-        "rouge1": 0.728, "rouge2": 0.497, "rougeL": 0.377,
-        "description": "Best overall coherence. Highest ROUGE-L (best long-range flow)."
-    },
-}
-
-# Default: ms-t5-base for best coherence (ROUGE-L)
-DEFAULT_MODEL_KEY = "ms-t5-base"
-
-# Module-level model cache to avoid reloading
 _cached_model = None
-_cached_model_name = None
 _patches_applied = False
 
 
-def list_models():
-    """Print all available models with their ROUGE scores."""
-    print(f"\n{'='*70}")
-    print(f"  AVAILABLE ABSTRACTIVE MODELS")
-    print(f"{'='*70}")
-    print(f"  {'Key':<14} {'Size':<8} {'ROUGE-1':<10} {'ROUGE-2':<10} {'ROUGE-L':<10}")
-    print(f"  {'─'*62}")
-    for key, info in AVAILABLE_MODELS.items():
-        marker = " ◀ default" if key == DEFAULT_MODEL_KEY else ""
-        print(f"  {key:<14} {info['size_mb']}MB   {info['rouge1']:<10.3f} {info['rouge2']:<10.3f} {info['rougeL']:<10.3f}{marker}")
-    print(f"{'='*70}\n")
-
-
-def _resolve_model_name(model_key_or_name):
-    """Resolve a short key (e.g. 'ms-t5-base') to a full HuggingFace model name."""
-    if model_key_or_name in AVAILABLE_MODELS:
-        return AVAILABLE_MODELS[model_key_or_name]["name"]
-    # If it's already a full HF model path, use as-is
-    return model_key_or_name
-
-
 def _apply_patches():
-    """Apply compatibility patches for Malaya (only once)."""
     global _patches_applied
     if _patches_applied:
         return
@@ -80,11 +24,9 @@ def _apply_patches():
     import inspect
     import numpy as np
 
-    # Python 3.11+ compatibility patch for Malaya
     if not hasattr(inspect, 'getargspec'):
         inspect.getargspec = inspect.getfullargspec
 
-    # SciPy compatibility patches
     try:
         import scipy
         if not hasattr(scipy, 'asarray'):
@@ -101,75 +43,44 @@ def _apply_patches():
     _patches_applied = True
 
 
-def _load_model(model_name):
-    """Load and cache the abstractive model."""
-    global _cached_model, _cached_model_name
+def _load_model():
+    global _cached_model
 
     _apply_patches()
     import malaya
 
-    if _cached_model is not None and _cached_model_name == model_name:
+    if _cached_model is not None:
         return _cached_model
 
-    print(f"[Abstractive] Loading model: {model_name}")
-    _cached_model = malaya.summarization.abstractive.huggingface(model=model_name)
-    _cached_model_name = model_name
+    print(f"[Abstractive] Loading model: {MODEL_NAME}")
+    _cached_model = malaya.summarization.abstractive.huggingface(model=MODEL_NAME)
     return _cached_model
 
 
-def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
+def abstractive_summarize(text, mode="beam",
                           max_length=512, min_length=100, length_penalty=2.0,
                           postprocess=True, bullet_points=True,
-                          # Beam search params
                           num_beams=5, no_repeat_ngram_size=3,
                           repetition_penalty=2.0, early_stopping=True,
-                          # Sampling params
                           top_p=0.92, top_k=0, temperature=0.7,
-                          # Postprocess params
                           n=2, threshold=0.3, reject_similarity=0.85):
     """
-    Generate an abstractive summary from the input text using Malaya T5.
-
-    Two decoding strategies:
-      - "beam": Beam search — deterministic, higher factual accuracy
-      - "sampling": Nucleus sampling — more natural/diverse output
+    Generate an abstractive summary from Malay text using ms-t5-base.
 
     Args:
-        text: Input text (typically the extractive summary output)
-        model: Model key ("t5-small", "t5-base", "ms-t5-small", "ms-t5-base")
-               or a full HuggingFace model path
-        mode: "beam" for beam search, "sampling" for nucleus sampling
-        max_length: Maximum length of generated summary in tokens
-        postprocess: If True, Malaya filters output using ROUGE and removes
-                     repetitive/biased sentences (recommended)
-
-        Beam search params (used when mode="beam"):
-            num_beams: Number of beams (higher = better quality, slower)
-            no_repeat_ngram_size: Prevents repeating n-grams of this size
-            repetition_penalty: Penalizes copying exact input (higher = more paraphrasing)
-            early_stopping: Stop when all beams produce EOS
-
-        Sampling params (used when mode="sampling"):
-            top_p: Nucleus sampling probability threshold (0.0-1.0)
-            top_k: Top-K filtering (0 = disabled, let top_p handle it)
-            temperature: Controls randomness (lower = more focused)
-
-        Postprocess params (used when postprocess=True):
-            n: N-gram size for ROUGE filtering
-            threshold: Minimum ROUGE-N score to keep a sentence
-            reject_similarity: Reject sentences with similarity above this
-
-    Returns:
-        str: The abstractive summary text
+        text:      Input text (typically extractive summary output)
+        mode:      "beam" (deterministic, higher accuracy) or
+                   "sampling" (more varied, higher hallucination risk)
+        max_length: Max output tokens
+        min_length: Min output tokens
+        postprocess: Filter low-ROUGE sentences via Malaya postprocessor
     """
-    model_name = _resolve_model_name(model)
-    loaded_model = _load_model(model_name)
+    loaded_model = _load_model()
 
-    # Build generation kwargs based on decoding mode
     gen_kwargs = {
         "max_length": max_length,
         "min_length": min_length,
-        "length_penalty": length_penalty
+        "length_penalty": length_penalty,
     }
 
     if mode == "beam":
@@ -189,7 +100,6 @@ def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
     else:
         raise ValueError(f"Unknown mode '{mode}'. Choose 'beam' or 'sampling'.")
 
-    # Postprocess kwargs
     pp_kwargs = {}
     if postprocess:
         pp_kwargs = {
@@ -202,10 +112,10 @@ def abstractive_summarize(text, model=DEFAULT_MODEL_KEY, mode="beam",
     result = loaded_model.generate([text], **gen_kwargs, **pp_kwargs)
 
     summary_text = result[0]
-    
+
     if bullet_points:
         import re
-        sentences = [s.strip(' \t\n\r"”“\'‘’') for s in re.split(r'\.\s+', summary_text) if s.strip(' \t\n\r"”“\'‘’')]
+        sentences = [s.strip(' \t\n\r"""\'''') for s in re.split(r'\.\s+', summary_text) if s.strip(' \t\n\r"""\'''')]
         bullets = []
         for s in sentences:
             if s.endswith('.'):
@@ -221,60 +131,38 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser(
-        description="Abstractive summarization for Malay text",
+        description="Abstractive summarization for Malay text (ms-t5-base)",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Models:
-  t5-small      242MB  Fastest, highest ROUGE-1
-  t5-base       892MB  Good balance (previous default)
-  ms-t5-small   242MB  More Malay-specific, highest ROUGE-2
-  ms-t5-base    892MB  Best coherence, highest ROUGE-L (new default)
-
 Examples:
   python abstractive.py --input cleaned_text/news.txt
-  python abstractive.py --input cleaned_text/news.txt --model ms-t5-base --mode sampling
-  python abstractive.py --list-models
+  python abstractive.py --input cleaned_text/news.txt --mode sampling
         """
     )
-    parser.add_argument("--input", help="Path to input text file")
-    parser.add_argument("--model", default=DEFAULT_MODEL_KEY,
-                        choices=list(AVAILABLE_MODELS.keys()),
-                        help=f"Model to use (default: {DEFAULT_MODEL_KEY})")
+    parser.add_argument("--input", required=True, help="Path to input text file")
     parser.add_argument("--mode", choices=["beam", "sampling"], default="beam",
                         help="Decoding strategy (default: beam)")
     parser.add_argument("--max-length", type=int, default=512,
                         help="Max summary length in tokens")
-    parser.add_argument("--min-length", type=int, default=120,
+    parser.add_argument("--min-length", type=int, default=100,
                         help="Min summary length in tokens")
     parser.add_argument("--length-penalty", type=float, default=2.0,
                         help="Length penalty (>1.0 encourages longer output)")
     parser.add_argument("--no-bullet-points", action="store_false", dest="bullet_points",
-                        help="Disable bullet points formatting")
+                        help="Disable bullet point formatting")
     parser.set_defaults(bullet_points=True)
     parser.add_argument("--no-postprocess", action="store_true",
-                        help="Disable Malaya's built-in ROUGE postprocessing")
-    parser.add_argument("--list-models", action="store_true",
-                        help="List all available models and exit")
+                        help="Disable Malaya's ROUGE postprocessing")
 
     args = parser.parse_args()
-
-    if args.list_models:
-        list_models()
-        exit(0)
-
-    if not args.input:
-        parser.error("--input is required (unless using --list-models)")
 
     with open(args.input, "r", encoding="utf-8") as f:
         text = f.read()
 
-    model_info = AVAILABLE_MODELS.get(args.model, {})
-    model_label = model_info.get("description", args.model)
-
     print(f"\n{'='*60}")
     print(f"  ABSTRACTIVE SUMMARIZATION")
     print(f"{'='*60}")
-    print(f"  Model:       {args.model} — {model_label}")
+    print(f"  Model:       ms-t5-base (mesolitica, ROUGE-L 0.377)")
     print(f"  Decoding:    {args.mode}")
     print(f"  Postprocess: {not args.no_postprocess}")
     print(f"  Input:       {len(text.split())} words")
@@ -282,7 +170,6 @@ Examples:
 
     summary = abstractive_summarize(
         text,
-        model=args.model,
         mode=args.mode,
         max_length=args.max_length,
         min_length=args.min_length,

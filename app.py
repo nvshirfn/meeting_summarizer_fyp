@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore")
 
 from preprocess import NORMALIZATION_OPTIONS, preprocess_malay_transcript
 from extractive import run_extractive
-from abstractive import abstractive_summarize, AVAILABLE_MODELS, DEFAULT_MODEL_KEY
+from abstractive import abstractive_summarize, MODEL_NAME
 from topic_modeling import perform_topic_modeling
 from sentiment_analysis import analyze_sentiment
 
@@ -92,8 +92,7 @@ TOPIC_MODELS = {
 }
 
 ABSTRACTIVE_MODELS = {
-    key: f"{key}  —  {info['description']}"
-    for key, info in AVAILABLE_MODELS.items()
+    "ms-t5-base": "ms-t5-base  —  Best overall coherence (ROUGE-L 0.377)"
 }
 
 
@@ -107,7 +106,6 @@ def upload_page():
         topic_models=TOPIC_MODELS,
         abstractive_models=ABSTRACTIVE_MODELS,
         normalization_options=NORMALIZATION_OPTIONS,
-        default_abs=DEFAULT_MODEL_KEY,
     )
 
 
@@ -121,7 +119,6 @@ def process():
     ext_method     = request.form.get("summarization_model", "textrank")
     sentiment_key  = request.form.get("sentiment_model", "lexicon")
     topic_key      = request.form.get("topic_model", "lda")
-    abs_model_key  = request.form.get("abstractive_model", DEFAULT_MODEL_KEY)
     normalization_key = request.form.get("normalization", "hybrid")
 
     # Save uploaded file
@@ -163,11 +160,10 @@ def process():
     sentiment = analyze_sentiment(cleaned_transcript, method=sentiment_key)
 
     # ── STEP 5  Extractive → Abstractive ────────────────────────
-    print(f"[Web] Step 5/5 — Summarization ({ext_method} → {abs_model_key}) …")
+    print(f"[Web] Step 5/5 — Summarization ({ext_method} → ms-t5-base) …")
     extractive_result = run_extractive(cleaned_transcript, method=ext_method)
     summary = abstractive_summarize(
         extractive_result["combined"],
-        model=abs_model_key,
         mode="beam",
         postprocess=True,
     )
@@ -183,7 +179,7 @@ def process():
         "sentiment": sentiment,
         "topics": topics,
         "extractive_method": SUMMARIZATION_MODELS.get(ext_method, ext_method),
-        "abstractive_model": ABSTRACTIVE_MODELS.get(abs_model_key, abs_model_key),
+        "abstractive_model": "ms-t5-base  —  Best overall coherence (ROUGE-L 0.377)",
         "sentiment_model": SENTIMENT_MODELS.get(sentiment_key, sentiment_key),
         "topic_model": TOPIC_MODELS.get(topic_key, topic_key),
         "normalization": NORMALIZATION_OPTIONS.get(normalization_key, normalization_key),
