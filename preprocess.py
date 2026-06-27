@@ -119,8 +119,8 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
 
         # 1. REMOVE WORDS (Fillers, Particles, Interjections, Vocatives)
         remove_list = [
-            'ah', 'aa', 'ahh', 'alah', 'aiyoh', 'aiyaya', 'bruh', 'beb', 'babe', 
-            'ceh', 'ehh', 'err', 'emm', 'fuh', 'ha', 'haa', 'halah', 'hekeleh', 
+            'ah', 'aa', 'ahh', 'alah', 'aiyoh', 'aiyaya', 'bruh', 'beb', 'babe',
+            'ceh', 'eh', 'ehh', 'err', 'emm', 'fuh', 'ha', 'haa', 'halah', 'hekeleh',
             'hm', 'hmm', 'kan', 'lah', 'ouh', 'peh', 'uhm', 'wuih'
         ]
         remove_patterns = [rf'\b{word}[.,!?]?\b' for word in remove_list]
