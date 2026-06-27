@@ -72,6 +72,13 @@ def _get_model():
 
     print("[Sentiment] Loading Malaya transformer sentiment model …")
     _model = malaya.sentiment.huggingface()
+
+    # Force eager attention — newer transformers (>=4.47) SDPA path calls
+    # .item() on meta tensors during mask computation, causing a RuntimeError.
+    if hasattr(_model, 'model') and hasattr(_model.model, 'config'):
+        _model.model.config._attn_implementation = "eager"
+        _model.model.config._attn_implementation_autoset = False
+
     print("[Sentiment] Model loaded successfully.")
     return _model
 
