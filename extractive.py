@@ -274,7 +274,7 @@ def extractive_lsa(text, ratio=0.20, min_sentences=3, min_words=8, max_words=65,
     }
 
 
-def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6,
+def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=10, max_words=65, max_sentences=10,
                        model='mesolitica/electra-base-generator-bahasa-cased'):
     """
     Extractive summarization using Malaya ELECTRA Encoder.
@@ -285,6 +285,8 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6,
         ratio: Fraction of sentences to extract (default 20%)
         min_sentences: Minimum number of sentences to extract
         min_words: Minimum word count for a sentence to be eligible for extraction
+        max_words: Maximum word count — excludes run-on sentences from candidate pool
+        max_sentences: Hard ceiling on output sentence count
 
     Returns:
         dict with keys: method, sentences, combined, total_sentences, extracted_count
@@ -293,10 +295,10 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6,
 
     import malaya
 
-    # Tokenize and filter out short low-content sentences
+    # Tokenize and apply word-count gate [min_words, max_words]
     input_sentences = tokenize_sentences(text)
     total_sentences = len(input_sentences)
-    eligible = [s for s in input_sentences if len(s.split()) >= min_words]
+    eligible = [s for s in input_sentences if min_words <= len(s.split()) <= max_words]
     after_length = len(eligible)
 
     # Deduplicate near-identical sentences — bidirectional check (keeps first occurrence)
@@ -320,9 +322,10 @@ def extractive_electra(text, ratio=0.20, min_sentences=3, min_words=6,
 
     eligible_count = len(seen)
     sentences_to_extract = max(min_sentences, int(eligible_count * ratio))
+    sentences_to_extract = min(sentences_to_extract, max_sentences)
 
     print(f"  [ELECTRA] Total sentences:     {total_sentences}")
-    print(f"  [ELECTRA] After length filter: {after_length} (min_words={min_words})")
+    print(f"  [ELECTRA] After length filter: {after_length} (min_words={min_words}, max_words={max_words})")
     print(f"  [ELECTRA] After dedup:         {eligible_count}")
     print(f"  [ELECTRA] Extracting:          {sentences_to_extract} sentences (ratio={ratio})")
 
