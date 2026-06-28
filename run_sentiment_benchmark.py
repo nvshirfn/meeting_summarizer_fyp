@@ -1,7 +1,11 @@
 """
 Sentiment benchmark: run all 10 stt_transcription_trimmed files through
 bert, multinomial_nb, and lexicon models, then write a report to
-Testing/SENTIMENT/SENTIMENT_1.md.
+Testing/SENTIMENT/SENTIMENT_2.md.
+
+Text is preprocessed with preprocess_malay_transcript (meeting mode,
+dictionary normalization) before sentiment analysis to remove fillers,
+normalize slang, and reduce noise from raw STT transcripts.
 """
 
 import os
@@ -14,6 +18,7 @@ ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT))
 
 from sentiment_analysis import analyze_sentiment
+from preprocess import preprocess_malay_transcript
 
 # ── files ───────────────────────────────────────────────────────────
 INPUT_DIR = ROOT / "stt_transcription_trimmed"
@@ -33,14 +38,16 @@ MODELS = ["bert", "multinomial_nb", "lexicon"]
 
 OUTPUT_DIR = ROOT / "Testing" / "SENTIMENT"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-OUTPUT_FILE = OUTPUT_DIR / "SENTIMENT_1.md"
+OUTPUT_FILE = OUTPUT_DIR / "SENTIMENT_2.md"
 
 # ── helpers ─────────────────────────────────────────────────────────
 
 def load_text(filename):
     path = INPUT_DIR / filename
     with open(path, "r", encoding="utf-8") as f:
-        return f.read().strip()
+        raw = f.read().strip()
+    cleaned = preprocess_malay_transcript(raw, mode="meeting", normalization="dictionary")
+    return raw, cleaned
 
 
 def fmt_label(label):
@@ -57,9 +64,11 @@ def run():
         print(f"\n{'='*60}")
         print(f"File: {filename}")
         print(f"{'='*60}")
-        text = load_text(filename)
-        print(f"  Length: {len(text)} chars")
+        raw, text = load_text(filename)
+        print(f"  Raw: {len(raw)} chars  ->  Preprocessed: {len(text)} chars")
         results[filename] = {}
+        results[filename]["_raw_len"] = len(raw)
+        results[filename]["_clean_len"] = len(text)
 
         for model in MODELS:
             print(f"  Running [{model}] ...", end=" ", flush=True)
@@ -74,13 +83,18 @@ def run():
     lines = []
     lines.append("# Sentiment Analysis Benchmark — All 10 Files × 3 Models\n")
     lines.append(f"Files processed: {len(FILES)}  |  Models: {', '.join(MODELS)}\n")
+    lines.append("**Preprocessing:** `preprocess_malay_transcript(mode='meeting', normalization='dictionary')` applied before sentiment analysis.\n\n")
     lines.append("---\n")
 
     # Per-file detailed results
     lines.append("## Per-File Results\n")
     for filename in FILES:
         name = Path(filename).stem
+        raw_len = results[filename]["_raw_len"]
+        clean_len = results[filename]["_clean_len"]
+        reduction = round((1 - clean_len / raw_len) * 100, 1)
         lines.append(f"### {name}\n")
+        lines.append(f"_Preprocessing: {raw_len} chars → {clean_len} chars ({reduction}% reduction)_\n\n")
         lines.append("| Model | Sentiment | Positive | Negative | Neutral | Confidence | Time |\n")
         lines.append("|-------|-----------|----------|----------|---------|------------|------|\n")
         for model in MODELS:
