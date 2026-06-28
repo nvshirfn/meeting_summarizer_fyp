@@ -57,6 +57,32 @@ _⚠️ Abstractive postprocess (Malaya ROUGE filter, the webpage default) crash
 - **Semantic:** textrank (0.684)
 
 ---
+## Key Findings
+
+### 1. Extractive vs Abstractive — ROUGE drops but meaning is preserved
+Extractive methods score higher on ROUGE across all three LLM references because they copy sentences directly from the transcript, using the same words the LLM also picked. Abstractive methods rephrase the content, so ROUGE drops — but the **semantic gap is substantially smaller than the ROUGE gap**:
+
+| | ROUGE-1 drop | Semantic drop |
+|---|---|---|
+| textrank → abstractive_textrank | −0.089 | −0.077 |
+| lsa → abstractive_lsa | −0.072 | −0.027 |
+| electra → abstractive_electra | −0.051 | +0.007 |
+
+The abstractive step trades lexical overlap for fluency and coherence without losing meaningful coverage — which is the primary purpose of the hybrid pipeline.
+
+### 2. TextRank is the strongest base extractor
+TextRank leads on ROUGE-1, ROUGE-L, and semantic similarity both as a standalone extractor and as a base for the abstractive step (`abstractive_textrank` = highest semantic among all abstractive variants at 0.607). This is consistent across all three LLM reference sets, confirming it is not an artefact of any single reference style.
+
+### 3. Rankings are stable across all three LLM references
+The method ordering (textrank > lsa > electra for extractive; abstractive_textrank ≥ abstractive_lsa > abstractive_electra for abstractive) holds consistently under Claude, Gemini, and ChatGPT references. This stability indicates the results are not biased by any individual LLM's summary style.
+
+### 4. Extractive scores are pipeline-internal baselines, not user-facing outputs
+The web application outputs only the abstractive summary (extractive → ms-t5-base). The extractive ROUGE scores serve as internal baselines to show how much information the abstractive step retains relative to the raw extraction. The **primary user-facing evaluation is `abstractive_textrank`, `abstractive_lsa`, and `abstractive_electra`**.
+
+### 5. Robustness limitation — postprocessor crashes on 2 files
+Malaya's ROUGE postprocessor (`postprocess=True`, the web app default) crashed on `MeetingSample(textrank)` and `mesyuarat_hari_sukan(electra)`, falling back to `postprocess=False`. These two abstractive outputs are therefore not identical to what the live app would produce (the live app would return a 500 error). This is a known robustness limitation worth noting in the thesis.
+
+---
 ## Per-File Detail
 ### Reference: claude
 #### berita
