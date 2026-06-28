@@ -248,8 +248,7 @@ def main():
 
         print(f"\n=== {name} ===")
         raw     = path.read_text(encoding="utf-8")
-        cleaned = preprocess_malay_transcript(raw, mode="meeting",
-                                              normalization=NORMALIZATION)
+        cleaned = preprocess_malay_transcript(raw, normalization=NORMALIZATION)
         texts   = tokenize_for_coherence(cleaned)
 
         for m in methods:

@@ -60,8 +60,7 @@ def main():
 
         print(f"\n=== {name} (label: {true_label}) ===")
         raw     = path.read_text(encoding="utf-8")
-        cleaned = preprocess_malay_transcript(raw, mode="meeting",
-                                              normalization=NORMALIZATION)
+        cleaned = preprocess_malay_transcript(raw, normalization=NORMALIZATION)
 
         for method in METHODS:
             result = analyze_sentiment(cleaned, method=method)

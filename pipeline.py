@@ -1,8 +1,6 @@
 """
-Unified Summarization Pipeline for Malay Text
+Unified Summarization Pipeline for Malay Meeting Transcripts
 Chains: Preprocess → Extractive → Abstractive → Report
-
-Supports both meeting transcripts and written Malay text (news, articles).
 """
 
 import os
@@ -16,7 +14,7 @@ from topic_modeling import perform_topic_modeling
 from sentiment_analysis import analyze_sentiment
 
 
-def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
+def run_pipeline(input_path, extractive_method="textrank",
                  output_dir="summaries", skip_preprocess=False,
                  abs_mode="beam", postprocess=True, normalization="hybrid"):
     """
@@ -25,7 +23,6 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
     Args:
         input_path: Path to the raw input text file
         extractive_method: "textrank", "lsa", or "electra"
-        mode: "meeting" for spoken transcripts, "written" for news/articles
         output_dir: Directory to save the output report
         skip_preprocess: If True, skip preprocessing (input is already clean)
         abs_mode: Decoding strategy ("beam" or "sampling")
@@ -39,7 +36,6 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
     print(f"  MALAY TEXT SUMMARIZATION PIPELINE")
     print(f"{'='*60}")
     print(f"  Input:       {input_path}")
-    print(f"  Mode:        {mode}")
     print(f"  Extractive:  {extractive_method.upper()}")
     print(f"  Abstractive: ms-t5-base ({abs_mode})")
     print(f"  Normalize:   {normalization}")
@@ -57,10 +53,9 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         print("[Step 1/3] Preprocessing: SKIPPED (using input as-is)\n")
         cleaned_text = raw_text
     else:
-        print(f"[Step 1/3] Preprocessing ({mode} mode, {normalization} normalization)...")
+        print(f"[Step 1/3] Preprocessing ({normalization} normalization)...")
         cleaned_text = preprocess_malay_transcript(
             raw_text,
-            mode=mode,
             normalization=normalization,
         )
         cleaned_word_count = len(cleaned_text.split())
@@ -119,7 +114,6 @@ def run_pipeline(input_path, extractive_method="textrank", mode="meeting",
         f.write(f"MALAY TEXT SUMMARIZATION REPORT\n")
         f.write(f"{'='*60}\n")
         f.write(f"Input:              {input_path}\n")
-        f.write(f"Mode:               {mode}\n")
         f.write(f"Extractive Method:  {extractive_method.upper()}\n")
         f.write(f"Abstractive Model:  ms-t5-base ({abs_mode})\n")
         f.write(f"Normalization:      {NORMALIZATION_OPTIONS.get(normalization, normalization)}\n")
@@ -167,15 +161,13 @@ if __name__ == "__main__":
         epilog="""
 Examples:
   python pipeline.py --input stt_transcription/culture_shock.txt --method textrank
-  python pipeline.py --input cleaned_text/news.txt --method lsa --mode written --skip-preprocess
+  python pipeline.py --input stt_transcription/culture_shock.txt --method lsa --skip-preprocess
   python pipeline.py --input stt_transcription/culture_shock.txt --method textrank --abs-mode sampling
         """
     )
     parser.add_argument("--input", required=True, help="Path to input text file")
     parser.add_argument("--method", choices=["textrank", "lsa", "electra"], default="textrank",
                         help="Extractive summarization method (default: textrank)")
-    parser.add_argument("--mode", choices=["meeting", "written"], default="meeting",
-                        help="Text type: 'meeting' for transcripts, 'written' for news/articles (default: meeting)")
     parser.add_argument("--output-dir", default="summaries",
                         help="Directory to save output reports (default: summaries)")
     parser.add_argument("--skip-preprocess", action="store_true",
@@ -196,7 +188,6 @@ Examples:
     run_pipeline(
         input_path=args.input,
         extractive_method=args.method,
-        mode=args.mode,
         output_dir=args.output_dir,
         skip_preprocess=args.skip_preprocess,
         abs_mode=args.abs_mode,

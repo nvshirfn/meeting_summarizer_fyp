@@ -147,7 +147,6 @@ def process():
     print(f"[Web] Step 2/5 — Preprocessing ({normalization_key}) …")
     cleaned_transcript = preprocess_malay_transcript(
         raw_transcript,
-        mode="meeting",
         normalization=normalization_key,
     )
 

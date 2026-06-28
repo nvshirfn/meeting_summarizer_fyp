@@ -92,14 +92,12 @@ def _apply_malaya_normalization(text):
         return text
 
 
-def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normalization="dictionary"):
+def preprocess_malay_transcript(text, lowercase=False, normalization="dictionary", **_ignored):
     """
-    Preprocess Malay text for summarization.
-    
+    Preprocess Malay meeting transcript text for summarization.
+
     Args:
-        text: Raw input text
-        mode: "meeting" for spoken transcripts (removes fillers, slang, etc.)
-              "written" for news/articles (lighter cleanup only)
+        text: Raw input text (spoken/transcribed Malay)
         lowercase: Whether to convert the text to lowercase (be careful using this with Abstractive models)
         normalization: "dictionary", "malaya", or "hybrid"
 
@@ -114,19 +112,18 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
 
     processed_text = text
 
-    if mode == "meeting":
-        # === MEETING/SPOKEN TEXT PROCESSING ===
+    # === MEETING/SPOKEN TEXT PROCESSING ===
 
-        # 1. REMOVE WORDS (Fillers, Particles, Interjections, Vocatives)
-        remove_list = [
-            'ah', 'aa', 'ahh', 'alah', 'aiyoh', 'aiyaya', 'bruh', 'beb', 'babe',
-            'ceh', 'eh', 'ehh', 'err', 'emm', 'fuh', 'ha', 'haa', 'halah', 'hekeleh',
-            'hm', 'hmm', 'kan', 'lah', 'ouh', 'peh', 'uhm', 'wuih'
-        ]
-        remove_patterns = [rf'\b{word}[.,!?]?\b' for word in remove_list]
+    # 1. REMOVE WORDS (Fillers, Particles, Interjections, Vocatives)
+    remove_list = [
+        'ah', 'aa', 'ahh', 'alah', 'aiyoh', 'aiyaya', 'bruh', 'beb', 'babe',
+        'ceh', 'eh', 'ehh', 'err', 'emm', 'fuh', 'ha', 'haa', 'halah', 'hekeleh',
+        'hm', 'hmm', 'kan', 'lah', 'ouh', 'peh', 'uhm', 'wuih'
+    ]
+    remove_patterns = [rf'\b{word}[.,!?]?\b' for word in remove_list]
 
-        # 2. SLANG / INFORMAL / ENGLISH WORD REPLACEMENT
-        replacements = {
+    # 2. SLANG / INFORMAL / ENGLISH WORD REPLACEMENT
+    replacements = {
             r'\bambik\b': 'ambil',
             r'\badoi\b': 'aduh',
             r'\bakak\b': 'kak',
@@ -241,26 +238,26 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
             r'\bvibe\b': 'suasana'
         }
 
-        if normalization in ("dictionary", "hybrid"):
-            # Apply longest patterns first so multi-word entries (e.g. "tak payah")
-            # match before single-word ones (e.g. "tak") consume their first word.
-            for pattern, replacement in sorted(replacements.items(), key=lambda x: -len(x[0])):
-                processed_text = re.sub(pattern, replacement, processed_text, flags=re.IGNORECASE)
+    if normalization in ("dictionary", "hybrid"):
+        # Apply longest patterns first so multi-word entries (e.g. "tak payah")
+        # match before single-word ones (e.g. "tak") consume their first word.
+        for pattern, replacement in sorted(replacements.items(), key=lambda x: -len(x[0])):
+            processed_text = re.sub(pattern, replacement, processed_text, flags=re.IGNORECASE)
 
-        if normalization in ("malaya", "hybrid"):
-            processed_text = _apply_malaya_normalization(processed_text)
+    if normalization in ("malaya", "hybrid"):
+        processed_text = _apply_malaya_normalization(processed_text)
 
-        for pattern in remove_patterns:
-            processed_text = re.sub(pattern, '', processed_text, flags=re.IGNORECASE)
+    for pattern in remove_patterns:
+        processed_text = re.sub(pattern, '', processed_text, flags=re.IGNORECASE)
 
-        # 5. REPETITIONS (The "Double Word" Pattern)
-        # Remove repeated words: "kita kita" → "kita" (case-insensitive so "Tak tak" also collapses)
-        processed_text = re.sub(r'\b(\w+)(?:\s+\1\b)+', r'\1', processed_text, flags=re.IGNORECASE)
+    # 5. REPETITIONS (The "Double Word" Pattern)
+    # Remove repeated words: "kita kita" → "kita" (case-insensitive so "Tak tak" also collapses)
+    processed_text = re.sub(r'\b(\w+)(?:\s+\1\b)+', r'\1', processed_text, flags=re.IGNORECASE)
 
-        # Remove repeated phrases (40+ chars)
-        processed_text = re.sub(r'(.{40,}?)\s+\1', r'\1', processed_text, flags=re.IGNORECASE)
+    # Remove repeated phrases (40+ chars)
+    processed_text = re.sub(r'(.{40,}?)\s+\1', r'\1', processed_text, flags=re.IGNORECASE)
 
-    # === COMMON CLEANUP (both modes) ===
+    # === COMMON CLEANUP ===
 
     # 1. MULTIPLE PUNCTUATION CLEANUP
     # Collapse repeating punctuation (e.g., ... -> ., !!! -> !, ??? -> ?)
@@ -282,24 +279,16 @@ def preprocess_malay_transcript(text, mode="meeting", lowercase=False, normaliza
     if lowercase:
         processed_text = processed_text.lower()
 
-    if mode != "meeting" and normalization in ("malaya", "hybrid"):
-        processed_text = _apply_malaya_normalization(processed_text)
-        processed_text = re.sub(r'\s+([.,!?])', r'\1', processed_text)
-        processed_text = re.sub(r'\s+', ' ', processed_text).strip()
-        if lowercase:
-            processed_text = processed_text.lower()
-
     return processed_text
 
 
-def preprocess_file(input_path, output_path=None, mode="meeting", lowercase=False, normalization="dictionary"):
+def preprocess_file(input_path, output_path=None, lowercase=False, normalization="dictionary"):
     """
-    Preprocess a text file and optionally save the result.
-    
+    Preprocess a Malay meeting transcript file and optionally save the result.
+
     Args:
         input_path: Path to the raw input text file
         output_path: Path to save cleaned text (None = don't save)
-        mode: "meeting" or "written"
         lowercase: Whether to convert text to lowercase
         normalization: "dictionary", "malaya", or "hybrid"
 
@@ -311,7 +300,6 @@ def preprocess_file(input_path, output_path=None, mode="meeting", lowercase=Fals
 
     cleaned = preprocess_malay_transcript(
         original,
-        mode=mode,
         lowercase=lowercase,
         normalization=normalization,
     )
@@ -333,9 +321,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Preprocess Malay text for summarization")
     parser.add_argument("--input", required=True, help="Path to raw input text file")
     parser.add_argument("--output", default=None, help="Path to save cleaned text")
-    parser.add_argument("--mode", choices=["meeting", "written"], default="meeting",
-                        help="Processing mode: 'meeting' for spoken transcripts, 'written' for news/articles")
-    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="dictionary",
+    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="hybrid",
                         help="Normalization strategy: dictionary, malaya, or hybrid")
     parser.add_argument("--lowercase", action="store_true", help="Enable lowercasing of text")
     
@@ -350,7 +336,6 @@ if __name__ == "__main__":
     cleaned = preprocess_file(
         args.input,
         args.output,
-        mode=args.mode,
         lowercase=args.lowercase,
         normalization=args.normalization,
     )

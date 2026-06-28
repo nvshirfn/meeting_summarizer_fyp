@@ -4,7 +4,7 @@ on the same input text, then run abstractive summarization on each.
 
 Usage:
   python compare_methods.py --input stt_transcription/culture_shock.txt
-  python compare_methods.py --input cleaned_text/news.txt --mode written --skip-preprocess
+  python compare_methods.py --input stt_transcription/culture_shock.txt --extractive-only
 """
 
 import os
@@ -19,20 +19,19 @@ from abstractive import abstractive_summarize
 METHODS = ["textrank", "lsa", "electra"]
 
 
-def compare_all(input_path, mode="meeting", output_dir="summaries",
+def compare_all(input_path, output_dir="summaries",
                 skip_preprocess=False, skip_abstractive=False,
-                abs_mode="beam", normalization="dictionary"):
+                abs_mode="beam", normalization="hybrid"):
     """
     Run all 3 extractive methods on the same input, then abstractive on each.
-    
+
     Args:
         input_path: Path to the raw input text file
-        mode: "meeting" or "written"
         output_dir: Directory to save the comparison report
         skip_preprocess: If True, skip preprocessing
         skip_abstractive: If True, only compare extractive outputs (faster)
         normalization: "dictionary", "malaya", or "hybrid"
-    
+
     Returns:
         dict mapping method name to results
     """
@@ -41,7 +40,6 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
     print(f"  COMPARISON: ALL EXTRACTIVE METHODS")
     print(f"{'='*60}")
     print(f"  Input: {input_path}")
-    print(f"  Mode:  {mode}")
     print(f"  Normalize: {normalization}")
     print(f"{'='*60}\n")
 
@@ -52,10 +50,9 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
         print("[Preprocess] Skipped\n")
         cleaned_text = raw_text
     else:
-        print(f"[Preprocess] Cleaning text ({mode} mode, {normalization} normalization)...")
+        print(f"[Preprocess] Cleaning text ({normalization} normalization)...")
         cleaned_text = preprocess_malay_transcript(
             raw_text,
-            mode=mode,
             normalization=normalization,
         )
         original_len = len(raw_text.split())
@@ -113,7 +110,6 @@ def compare_all(input_path, mode="meeting", output_dir="summaries",
         f.write(f"EXTRACTIVE METHOD COMPARISON REPORT\n")
         f.write(f"{'='*60}\n")
         f.write(f"Input:     {input_path}\n")
-        f.write(f"Mode:      {mode}\n")
         f.write(f"Normalize: {NORMALIZATION_OPTIONS.get(normalization, normalization)}\n")
         f.write(f"Abs Model: ms-t5-base ({abs_mode})\n")
         f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
@@ -171,19 +167,16 @@ if __name__ == "__main__":
         epilog="""
 Examples:
   python compare_methods.py --input stt_transcription/culture_shock.txt
-  python compare_methods.py --input cleaned_text/news.txt --mode written --skip-preprocess
   python compare_methods.py --input stt_transcription/culture_shock.txt --extractive-only
   python compare_methods.py --input stt_transcription/culture_shock.txt --abs-mode sampling
         """
     )
     parser.add_argument("--input", required=True, help="Path to input text file")
-    parser.add_argument("--mode", choices=["meeting", "written"], default="meeting",
-                        help="Text type (default: meeting)")
     parser.add_argument("--output-dir", default="summaries",
                         help="Directory to save comparison report (default: summaries)")
     parser.add_argument("--skip-preprocess", action="store_true",
                         help="Skip preprocessing")
-    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="dictionary",
+    parser.add_argument("--normalization", choices=list(NORMALIZATION_OPTIONS.keys()), default="hybrid",
                         help="Normalization strategy for preprocessing (default: dictionary)")
     parser.add_argument("--extractive-only", action="store_true",
                         help="Only compare extractive outputs (skip abstractive, much faster)")
@@ -198,7 +191,6 @@ Examples:
 
     compare_all(
         input_path=args.input,
-        mode=args.mode,
         output_dir=args.output_dir,
         skip_preprocess=args.skip_preprocess,
         skip_abstractive=args.extractive_only,

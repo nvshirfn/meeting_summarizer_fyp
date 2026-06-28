@@ -336,8 +336,7 @@ def main():
 
         print(f"\n=== {name} ===  (references: {', '.join(present)})")
         raw = transcript_path.read_text(encoding="utf-8")
-        cleaned = preprocess_malay_transcript(raw, mode="meeting",
-                                              normalization=NORMALIZATION)
+        cleaned = preprocess_malay_transcript(raw, normalization=NORMALIZATION)
         # Generate system outputs ONCE — independent of the reference LLM.
         outputs = generate_outputs(name, cleaned, methods, do_abstractive,
                                    args.refresh)
