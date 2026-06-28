@@ -61,6 +61,24 @@ def resolve_stems(stem_keywords, stem_map):
             resolved.append(stem)
     return resolved
 
+def build_keywords(words, weights):
+    """
+    Pair resolved keywords with their model weights and a normalized
+    bar length (0-1, relative to the strongest keyword in the topic) for the UI.
+    """
+    weights = [float(w) for w in weights]
+    max_w = max(weights) if weights else 0.0
+    keywords = []
+    for word, weight in zip(words, weights):
+        norm = (weight / max_w) if max_w > 0 else 0.0
+        keywords.append({
+            "word": word,
+            "weight": round(weight, 4),
+            "norm": round(norm, 4),
+        })
+    return keywords
+
+
 def is_noun_or_verb(word):
     """
     Rule-based check if a Malay word is likely a Noun or Verb
@@ -229,10 +247,12 @@ def perform_lda(text, num_topics=3, num_words=5):
     extracted_topics = []
     for topic_id, topic_term_prob in lda_model.show_topics(num_topics=num_topics, num_words=num_words, formatted=False):
         stem_keywords = [word for word, prob in topic_term_prob]
+        weights = [prob for word, prob in topic_term_prob]
         resolved_words = resolve_stems(stem_keywords, stem_map)
         extracted_topics.append({
             "topic_id": topic_id + 1,
-            "words": resolved_words
+            "words": resolved_words,
+            "keywords": build_keywords(resolved_words, weights),
         })
         
     return extracted_topics
@@ -338,10 +358,12 @@ def perform_bertopic(text, num_words=5):
         top_words_probs = topic_model.get_topic(topic_id)
         if top_words_probs:
             stem_keywords = [word for word, prob in top_words_probs][:num_words]
+            weights = [prob for word, prob in top_words_probs][:num_words]
             resolved_words = resolve_stems(stem_keywords, global_stem_map)
             extracted_topics.append({
                 "topic_id": topic_id + 1,
-                "words": resolved_words
+                "words": resolved_words,
+                "keywords": build_keywords(resolved_words, weights),
             })
 
     return extracted_topics
@@ -399,10 +421,12 @@ def perform_nmf(text, num_topics=3, num_words=5):
     for topic_idx, topic in enumerate(nmf_model.components_):
         top_features_ind = topic.argsort()[:-num_words - 1:-1]
         stem_keywords = [feature_names[i] for i in top_features_ind]
+        weights = [topic[i] for i in top_features_ind]
         resolved_words = resolve_stems(stem_keywords, global_stem_map)
         extracted_topics.append({
             "topic_id": topic_idx + 1,
-            "words": resolved_words
+            "words": resolved_words,
+            "keywords": build_keywords(resolved_words, weights),
         })
         
     return extracted_topics

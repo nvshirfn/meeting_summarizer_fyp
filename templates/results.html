@@ -224,11 +224,24 @@
             {% for t in r.topics %}
             <div class="topic-group">
               <div class="topic-group__label">Topic {{ t.topic_id }}</div>
+              {% if t.keywords %}
+              <div class="topic-bars">
+                {% for kw in t.keywords %}
+                <div class="topic-bar">
+                  <span class="topic-bar__word">{{ kw.word }}</span>
+                  <span class="topic-bar__track">
+                    <span class="topic-bar__fill" style="width: {{ (kw.norm * 100) | round(1) }}%;"></span>
+                  </span>
+                </div>
+                {% endfor %}
+              </div>
+              {% else %}
               <div class="topic-tags">
                 {% for w in t.words %}
                 <span class="topic-tag">{{ w }}</span>
                 {% endfor %}
               </div>
+              {% endif %}
             </div>
             {% endfor %}
           {% else %}
