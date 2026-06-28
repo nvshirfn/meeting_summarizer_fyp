@@ -343,6 +343,25 @@ body {
   padding-right: 2.4rem;
 }
 
+.field__fixed {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  font-size: .88rem;
+  padding: .6rem .9rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-muted);
+}
+
+.field__fixed svg {
+  flex-shrink: 0;
+  width: 13px;
+  height: 13px;
+  stroke: var(--text-muted);
+}
+
 /* ── Buttons ────────────────────────────────────────────────── */
 .btn {
   display: inline-flex;
