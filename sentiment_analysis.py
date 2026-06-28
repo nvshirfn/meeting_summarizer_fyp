@@ -93,10 +93,29 @@ def _split_sentences(text):
     return sentences if sentences else [text.strip()]
 
 
+def _chunk_text_for_bert(text, chunk_words=300, overlap_words=50):
+    """
+    Split text into overlapping word-based chunks so BERT never silently
+    truncates long STT transcripts at its ~512-token limit.
+    Short texts that already fit in one chunk are returned as-is.
+    """
+    words = text.split()
+    if len(words) <= chunk_words:
+        return [text]
+    step = chunk_words - overlap_words
+    chunks = []
+    for i in range(0, len(words), step):
+        chunk = ' '.join(words[i:i + chunk_words])
+        chunks.append(chunk)
+        if i + chunk_words >= len(words):
+            break
+    return chunks
+
+
 def _analyze_bert(text):
     """Transformer-based sentiment analysis using Malaya."""
     model = _get_model()
-    sentences = _split_sentences(text)
+    sentences = _chunk_text_for_bert(text)
 
     proba_results = model.predict_proba(sentences)
 

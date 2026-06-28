@@ -1,11 +1,15 @@
 """
 Sentiment benchmark: run all 10 stt_transcription_trimmed files through
 bert, multinomial_nb, and lexicon models, then write a report to
-Testing/SENTIMENT/SENTIMENT_2.md.
+Testing/SENTIMENT/SENTIMENT_3.md.
 
 Text is preprocessed with preprocess_malay_transcript (meeting mode,
 dictionary normalization) before sentiment analysis to remove fillers,
 normalize slang, and reduce noise from raw STT transcripts.
+
+BERT now uses word-based chunking (300 words, 50-word overlap) instead
+of punctuation-based sentence splitting, to avoid silent truncation on
+long STT transcripts.
 """
 
 import os
@@ -38,7 +42,8 @@ MODELS = ["bert", "multinomial_nb", "lexicon"]
 
 OUTPUT_DIR = ROOT / "Testing" / "SENTIMENT"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-OUTPUT_FILE = OUTPUT_DIR / "SENTIMENT_2.md"
+OUTPUT_FILE = OUTPUT_DIR / "SENTIMENT_3.md"
+PREV_FILE  = OUTPUT_DIR / "SENTIMENT_2.md"
 
 # ── helpers ─────────────────────────────────────────────────────────
 
@@ -84,6 +89,7 @@ def run():
     lines.append("# Sentiment Analysis Benchmark — All 10 Files × 3 Models\n")
     lines.append(f"Files processed: {len(FILES)}  |  Models: {', '.join(MODELS)}\n")
     lines.append("**Preprocessing:** `preprocess_malay_transcript(mode='meeting', normalization='dictionary')` applied before sentiment analysis.\n\n")
+    lines.append("**BERT chunking:** word-based chunks of 300 words (50-word overlap) — replaces punctuation-based sentence split to avoid silent truncation.\n\n")
     lines.append("---\n")
 
     # Per-file detailed results
@@ -273,6 +279,29 @@ def run():
     lines.append(f"- Full 3-model agreement: {total_agree}/{len(FILES)} files\n")
     lines.append(f"- BERT plausibility: {plaus['bert']}/{len(FILES)} | NB: {plaus['multinomial_nb']}/{len(FILES)} | Lexicon: {plaus['lexicon']}/{len(FILES)}\n")
 
+    # ── compare against previous run ────────────────────────────────
+    prev_bert_plaus = None
+    improved = None
+    if PREV_FILE.exists():
+        import re as _re
+        prev_text = PREV_FILE.read_text(encoding="utf-8")
+        m = _re.search(r'\*\*bert\*\*: (\d+)/10', prev_text)
+        if m:
+            prev_bert_plaus = int(m.group(1))
+            improved = plaus["bert"] > prev_bert_plaus
+
+    lines.append("\n---\n")
+    lines.append("## vs Previous Run (SENTIMENT_2.md)\n\n")
+    if prev_bert_plaus is not None:
+        lines.append(f"| Metric | SENTIMENT_2 (punct split) | SENTIMENT_3 (word chunks) | Change |\n")
+        lines.append(f"|--------|--------------------------|--------------------------|--------|\n")
+        lines.append(f"| BERT plausibility | {prev_bert_plaus}/10 | {plaus['bert']}/10 | {'**improved**' if improved else ('same' if not improved and plaus['bert'] == prev_bert_plaus else '**worse**')} |\n")
+        lines.append(f"| BERT avg confidence | — | {bert_avg:.1%} | — |\n")
+        verdict = "KEEP chunking fix" if improved or plaus['bert'] >= prev_bert_plaus else "REVERT to punct split"
+        lines.append(f"\n**Verdict: {verdict}**\n")
+    else:
+        lines.append("_(No previous run to compare against)_\n")
+
     # ── write file ───────────────────────────────────────────────────
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         f.writelines(lines)
@@ -280,6 +309,11 @@ def run():
     print(f"\n{'='*60}")
     print(f"Report written to: {OUTPUT_FILE}")
     print(f"Best model: {best.upper()}")
+    if prev_bert_plaus is not None:
+        change = plaus['bert'] - prev_bert_plaus
+        sign = "+" if change >= 0 else ""
+        print(f"BERT plausibility: {prev_bert_plaus}/10 -> {plaus['bert']}/10 ({sign}{change})")
+        print(f"Verdict: {'KEEP' if change >= 0 else 'REVERT'}")
     print(f"{'='*60}")
 
 
