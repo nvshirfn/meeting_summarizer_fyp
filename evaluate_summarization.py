@@ -129,31 +129,30 @@ def generate_outputs(name, cleaned, methods, do_abstractive, refresh):
             cache.write_text(outputs[m], encoding="utf-8")
 
     if do_abstractive:
-        cache = CACHE_DIR / f"{name}.abstractive.txt"
-        if cache.exists() and not refresh:
-            outputs["abstractive"] = cache.read_text(encoding="utf-8")
-        else:
-            # App default path: textrank extractive → ms-t5 abstractive.
-            base = outputs.get("textrank")
-            if base is None:
-                base = run_extractive(cleaned, method="textrank")["combined"]
-            print(f"  [{name}] generating abstractive (textrank -> ms-t5) ...")
-            try:
-                # Exact webpage path: beam + Malaya ROUGE postprocess.
-                outputs["abstractive"] = abstractive_summarize(
-                    base, mode="beam", postprocess=True
-                )
-            except Exception as e:
-                # Malaya's postprocessor is fragile on short/degenerate
-                # summaries (the webpage would 500 here). Fall back so the
-                # eval completes, and flag it.
-                print(f"  [{name}] postprocess failed ({type(e).__name__}); "
-                      f"retrying with postprocess=False")
-                outputs["abstractive"] = abstractive_summarize(
-                    base, mode="beam", postprocess=False
-                )
-                ABSTRACTIVE_FALLBACKS.append(name)
-            cache.write_text(outputs["abstractive"], encoding="utf-8")
+        # Generate one abstractive output per extractive method so we can see
+        # how the base extractor affects the abstractive quality.
+        for m in methods:
+            key = f"abstractive_{m}"
+            cache = CACHE_DIR / f"{name}.abstractive_{m}.txt"
+            if cache.exists() and not refresh:
+                outputs[key] = cache.read_text(encoding="utf-8")
+            else:
+                base = outputs.get(m)
+                if base is None:
+                    base = run_extractive(cleaned, method=m)["combined"]
+                print(f"  [{name}] generating abstractive ({m} -> ms-t5) ...")
+                try:
+                    outputs[key] = abstractive_summarize(
+                        base, mode="beam", postprocess=True
+                    )
+                except Exception as e:
+                    print(f"  [{name}] postprocess failed ({type(e).__name__}); "
+                          f"retrying with postprocess=False")
+                    outputs[key] = abstractive_summarize(
+                        base, mode="beam", postprocess=False
+                    )
+                    ABSTRACTIVE_FALLBACKS.append(f"{name}({m})")
+                cache.write_text(outputs[key], encoding="utf-8")
 
     return outputs
 
@@ -208,7 +207,7 @@ def _emit_mean_table(lines, table, method_order):
 
 def build_report(results, skipped, methods, do_abstractive, llms):
     """results: {llm: {name: {method: scores}}}."""
-    method_order = methods + (["abstractive"] if do_abstractive else [])
+    method_order = methods + ([f"abstractive_{m}" for m in methods] if do_abstractive else [])
     lines = []
     lines.append("# Summarization Evaluation — ROUGE vs LLM References (per-LLM)\n")
     lines.append(f"Methods: {', '.join(method_order)}\n")
