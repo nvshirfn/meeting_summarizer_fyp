@@ -42,8 +42,8 @@ MODELS = ["bert", "multinomial_nb", "lexicon"]
 
 OUTPUT_DIR = ROOT / "Testing" / "SENTIMENT"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-OUTPUT_FILE = OUTPUT_DIR / "SENTIMENT_3.md"
-PREV_FILE  = OUTPUT_DIR / "SENTIMENT_2.md"
+OUTPUT_FILE = OUTPUT_DIR / "SENTIMENT_4.md"
+PREV_FILE  = OUTPUT_DIR / "SENTIMENT_3.md"
 
 # ── helpers ─────────────────────────────────────────────────────────
 
@@ -291,13 +291,28 @@ def run():
             improved = plaus["bert"] > prev_bert_plaus
 
     lines.append("\n---\n")
-    lines.append("## vs Previous Run (SENTIMENT_2.md)\n\n")
+    lines.append("## vs Previous Run (SENTIMENT_3.md)\n\n")
     if prev_bert_plaus is not None:
-        lines.append(f"| Metric | SENTIMENT_2 (punct split) | SENTIMENT_3 (word chunks) | Change |\n")
-        lines.append(f"|--------|--------------------------|--------------------------|--------|\n")
-        lines.append(f"| BERT plausibility | {prev_bert_plaus}/10 | {plaus['bert']}/10 | {'**improved**' if improved else ('same' if not improved and plaus['bert'] == prev_bert_plaus else '**worse**')} |\n")
+        change_str = "**improved**" if improved else ("same" if plaus["bert"] == prev_bert_plaus else "**worse**")
+        nb_prev = None
+        if PREV_FILE.exists():
+            import re as _re2
+            prev_text2 = PREV_FILE.read_text(encoding="utf-8")
+            m2 = _re2.search(r'\*\*multinomial_nb\*\*: (\d+)/10', prev_text2)
+            if m2:
+                nb_prev = int(m2.group(1))
+        nb_change = ""
+        if nb_prev is not None:
+            nb_diff = plaus["multinomial_nb"] - nb_prev
+            nb_change = f"**{'improved' if nb_diff > 0 else ('same' if nb_diff == 0 else 'worse')}**"
+        lines.append(f"| Metric | SENTIMENT_3 | SENTIMENT_4 | Change |\n")
+        lines.append(f"|--------|-------------|-------------|--------|\n")
+        lines.append(f"| BERT plausibility | {prev_bert_plaus}/10 | {plaus['bert']}/10 | {change_str} |\n")
+        lines.append(f"| NB plausibility | {nb_prev}/10 | {plaus['multinomial_nb']}/10 | {nb_change} |\n")
         lines.append(f"| BERT avg confidence | — | {bert_avg:.1%} | — |\n")
-        verdict = "KEEP chunking fix" if improved or plaus['bert'] >= prev_bert_plaus else "REVERT to punct split"
+        bert_ok = plaus["bert"] >= prev_bert_plaus
+        nb_ok = nb_prev is None or plaus["multinomial_nb"] >= nb_prev
+        verdict = "KEEP changes" if (bert_ok and nb_ok) else "REVERT — no improvement"
         lines.append(f"\n**Verdict: {verdict}**\n")
     else:
         lines.append("_(No previous run to compare against)_\n")
@@ -313,7 +328,7 @@ def run():
         change = plaus['bert'] - prev_bert_plaus
         sign = "+" if change >= 0 else ""
         print(f"BERT plausibility: {prev_bert_plaus}/10 -> {plaus['bert']}/10 ({sign}{change})")
-        print(f"Verdict: {'KEEP' if change >= 0 else 'REVERT'}")
+        print(f"NB   plausibility: ?/10 -> {plaus['multinomial_nb']}/10")
     print(f"{'='*60}")
 
 
