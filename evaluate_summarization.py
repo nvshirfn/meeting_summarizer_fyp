@@ -42,6 +42,12 @@ from pathlib import Path
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+# Windows consoles default to cp1252 and crash on non-ASCII prints.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except (AttributeError, ValueError):
+    pass
+
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT))
 
@@ -67,6 +73,14 @@ LLMS = ["claude", "gemini", "chatgpt"]
 METRICS = ("rouge1", "rouge2", "rougeL", "semantic")
 PLACEHOLDER_PREFIX = "<PASTE"
 
+# Must match the web app's defaults (app.py) so the evaluation scores the
+# SAME outputs a user gets from the webpage.
+NORMALIZATION = "hybrid"
+
+# Files where Malaya's ROUGE postprocessor (postprocess=True, the webpage
+# default) crashed and the abstractive step fell back to postprocess=False.
+ABSTRACTIVE_FALLBACKS = []
+
 # ── lazy semantic model ──────────────────────────────────────────────
 _sent_model = None
 
@@ -75,7 +89,7 @@ def _semantic_model():
     global _sent_model
     if _sent_model is None:
         from sentence_transformers import SentenceTransformer
-        print("[Eval] Loading multilingual sentence model for semantic score …")
+        print("[Eval] Loading multilingual sentence model for semantic score ...")
         _sent_model = SentenceTransformer("paraphrase-multilingual-MiniLM-L12-v2")
     return _sent_model
 
@@ -110,7 +124,7 @@ def generate_outputs(name, cleaned, methods, do_abstractive, refresh):
         if cache.exists() and not refresh:
             outputs[m] = cache.read_text(encoding="utf-8")
         else:
-            print(f"  [{name}] generating extractive: {m} …")
+            print(f"  [{name}] generating extractive: {m} ...")
             outputs[m] = run_extractive(cleaned, method=m)["combined"]
             cache.write_text(outputs[m], encoding="utf-8")
 
@@ -123,10 +137,22 @@ def generate_outputs(name, cleaned, methods, do_abstractive, refresh):
             base = outputs.get("textrank")
             if base is None:
                 base = run_extractive(cleaned, method="textrank")["combined"]
-            print(f"  [{name}] generating abstractive (textrank → ms-t5) …")
-            outputs["abstractive"] = abstractive_summarize(
-                base, mode="beam", postprocess=True
-            )
+            print(f"  [{name}] generating abstractive (textrank -> ms-t5) ...")
+            try:
+                # Exact webpage path: beam + Malaya ROUGE postprocess.
+                outputs["abstractive"] = abstractive_summarize(
+                    base, mode="beam", postprocess=True
+                )
+            except Exception as e:
+                # Malaya's postprocessor is fragile on short/degenerate
+                # summaries (the webpage would 500 here). Fall back so the
+                # eval completes, and flag it.
+                print(f"  [{name}] postprocess failed ({type(e).__name__}); "
+                      f"retrying with postprocess=False")
+                outputs["abstractive"] = abstractive_summarize(
+                    base, mode="beam", postprocess=False
+                )
+                ABSTRACTIVE_FALLBACKS.append(name)
             cache.write_text(outputs["abstractive"], encoding="utf-8")
 
     return outputs
@@ -187,6 +213,8 @@ def build_report(results, skipped, methods, do_abstractive, llms):
     lines.append("# Summarization Evaluation — ROUGE vs LLM References (per-LLM)\n")
     lines.append(f"Methods: {', '.join(method_order)}\n")
     lines.append(f"Reference LLMs: {', '.join(llms)} (scored as separate reference sets)\n")
+    lines.append(f"Preprocessing: meeting mode, **{NORMALIZATION}** normalization "
+                 f"(matches the web app default)\n")
     lines.append(
         "\n> **References are LLM-generated (silver standard), not human gold.** "
         "Scores measure similarity to each LLM's summary — a relative comparison "
@@ -199,6 +227,13 @@ def build_report(results, skipped, methods, do_abstractive, llms):
         sk = "; ".join(f"{llm}: {', '.join(fs)}" for llm, fs in skipped.items() if fs)
         if sk:
             lines.append(f"_Skipped (no reference filled in yet) — {sk}_\n\n")
+    if ABSTRACTIVE_FALLBACKS:
+        lines.append(
+            f"_⚠️ Abstractive postprocess (Malaya ROUGE filter, the webpage "
+            f"default) crashed on: {', '.join(ABSTRACTIVE_FALLBACKS)} — these "
+            f"used `postprocess=False` instead. The live app would error on "
+            f"these inputs; worth noting as a robustness limitation._\n\n"
+        )
     lines.append("---\n")
 
     # 1. Aggregate per reference LLM
@@ -303,7 +338,7 @@ def main():
         print(f"\n=== {name} ===  (references: {', '.join(present)})")
         raw = transcript_path.read_text(encoding="utf-8")
         cleaned = preprocess_malay_transcript(raw, mode="meeting",
-                                              normalization="dictionary")
+                                              normalization=NORMALIZATION)
         # Generate system outputs ONCE — independent of the reference LLM.
         outputs = generate_outputs(name, cleaned, methods, do_abstractive,
                                    args.refresh)
