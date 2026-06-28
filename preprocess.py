@@ -2,9 +2,9 @@ import re
 
 
 NORMALIZATION_OPTIONS = {
+    "hybrid": "Hybrid (Dictionary + Malaya)",
     "dictionary": "Dictionary-Based Mapping",
     "malaya": "Malaya Dictionary (Extended)",
-    "hybrid": "Hybrid (Dictionary + Malaya)",
 }
 
 # ── Malaya-based normalization state ───────────────────────────
