@@ -92,7 +92,7 @@ TOPIC_MODELS = {
 }
 
 ABSTRACTIVE_MODELS = {
-    "ms-t5-base": "ms-t5-base  —  highest reported ROUGE-L (0.377, mesolitica benchmark)"
+    "ms-t5-base": "ms-t5-base  —  Malay abstractive summarizer (mesolitica)"
 }
 
 
@@ -179,7 +179,7 @@ def process():
         "sentiment": sentiment,
         "topics": topics,
         "extractive_method": SUMMARIZATION_MODELS.get(ext_method, ext_method),
-        "abstractive_model": "ms-t5-base  —  mesolitica finetune-summarization (reported ROUGE-L 0.377)",
+        "abstractive_model": "ms-t5-base  —  mesolitica finetune-summarization",
         "sentiment_model": SENTIMENT_MODELS.get(sentiment_key, sentiment_key),
         "topic_model": TOPIC_MODELS.get(topic_key, topic_key),
         "normalization": NORMALIZATION_OPTIONS.get(normalization_key, normalization_key),

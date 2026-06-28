@@ -162,7 +162,7 @@ Examples:
     print(f"\n{'='*60}")
     print(f"  ABSTRACTIVE SUMMARIZATION")
     print(f"{'='*60}")
-    print(f"  Model:       ms-t5-base (mesolitica, reported ROUGE-L 0.377)")
+    print(f"  Model:       ms-t5-base (mesolitica finetune-summarization)")
     print(f"  Decoding:    {args.mode}")
     print(f"  Postprocess: {not args.no_postprocess}")
     print(f"  Input:       {len(text.split())} words")
