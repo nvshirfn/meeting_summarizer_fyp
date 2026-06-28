@@ -20,6 +20,21 @@ Abstractive Summarization:
 - Malaysian-BART
 - Llama-3-8B
 
+
+OPTIONS:
+1. Hugging Face 
+2. Malay Library
+3. API-based LLM Models (Gemini, OpenAI, Anthropic)
+4. Open-weights LLM Locally on own computer/free local LLM (Llama 3, Qwen)
+
+
+Yes, if you want API-level accuracy without paying for an API key, running an open-weights LLM locally on your own computer is exactly how you do it.
+
+The Difference: API vs. Local LLMs
+Paid APIs (OpenAI, Gemini API): You are paying to rent their massive supercomputers to process your text. You send the text over the internet, they process it, and send the summary back.
+
+Free Local LLMs (Llama 3, Qwen): Tech giants like Meta (Facebook) and Alibaba spent millions training massive AI brains. Then, they released the "weights" (the files that make up the AI's brain) to the public for free. You download these files and run them on your own hardware. Zero API costs, zero internet required.
+
 The most accurate way to do this in Python is a Two-Step Pipeline:
 
 Step 1 (Extractive Filter): Use an extractive model (like Malaya.summarize.extractive.transformer) to reduce a long 1-hour transcript down to the top 20% most important sentences.
@@ -32,3 +47,30 @@ Speed: Abstractive models are slow on long text. Shortening it first makes the p
 
 Accuracy: It prevents the abstractive AI from "wandering off" or hallucinating, because it only sees the most relevant facts
 
+
+Stemming ✂️
+Cuts words to a base form by removing endings, sometimes not a real word.
+Example:
+running → run
+studies → studi (not a real word)
+Lemmatization 📖
+Converts words to their real dictionary base form (lemma) using grammar rules.
+Example:
+running → run
+studies → study (real word)
+
+In one line:
+👉 Stemming = faster but rough
+👉 Lemmatization = slower but more accurate
+
+
+Added Punctuation Cleanup: I added regex to collapse repeating dots, exclamation marks, and question marks into single characters.
+Added Special Character Stripping: I added a regex cleanup step r'[^\w\s.,!\'"-]' to strip out all bizarre structural tokens but preserve the structural punctuation limits.
+Added Lowercasing as an Argument: I added an optional lowercase=False argument to preprocess_malay_transcript. By default from the command line, it's false, but you can pass the --lowercase flag if you want to test whether LSA/TextRank improve with lowercase text over your pipeline script.
+
+
+Why it's better than LDA
+
+LDA only looks at word frequency.
+
+BERTopic understands meaning.
