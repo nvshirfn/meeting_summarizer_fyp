@@ -109,7 +109,15 @@ def abstractive_summarize(text, mode="beam",
             "reject_similarity": reject_similarity,
         }
 
-    result = loaded_model.generate([text], **gen_kwargs, **pp_kwargs)
+    try:
+        result = loaded_model.generate([text], **gen_kwargs, **pp_kwargs)
+    except Exception:
+        if pp_kwargs:
+            # Malaya ROUGE postprocessor can crash on short/non-Latin output
+            # (empty vocabulary after stop-word removal). Retry without it.
+            result = loaded_model.generate([text], **gen_kwargs)
+        else:
+            raise
 
     summary_text = result[0]
 
